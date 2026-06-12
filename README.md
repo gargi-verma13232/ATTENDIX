@@ -9,7 +9,6 @@ A modern, comprehensive attendance management and academic tracking application 
 
 - **📊 Student Dashboard (`/student`)**
   Get a high-level overview of overall attendance, upcoming classes, and recent alerts. Visualizes data using interactive charts to quickly identify areas needing attention.
-
 - **📅 Recovery Planner (`/student/recovery`)**
   A smart tool to help students calculate exactly how many classes they need to attend to reach their target attendance percentage for specific subjects.
 
@@ -27,6 +26,27 @@ A modern, comprehensive attendance management and academic tracking application 
 - **Icons:** Lucide React for consistent, beautiful iconography.
 - **Data Layer:** Context API with a custom `MockDataProvider` to simulate backend API responses.
 
+## Getting Started
+
+To run this project locally:
+
+1. **Clone and enter the directory:**
+   ```bash
+   git clone <repository-url>
+   cd attendix
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
+
+4. Open `http://localhost:5173` in your browser.
 
 ## Project Structure
 ```text
@@ -42,5 +62,6 @@ src/
 └── index.css       # Global Tailwind imports
 ```
 
-
+## Deployment
+This project is continuously deployed to Netlify via continuous deployment. Any changes pushed to the `main` branch are automatically built (`npm run build`) and the `dist` directory is published live.
 

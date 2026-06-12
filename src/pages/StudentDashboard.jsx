@@ -24,7 +24,7 @@ const StudentDashboard = () => {
       <div className="dashboard-grid">
         
         {/* Main Attendance Overview */}
-        <div className="glass-panel col-span-8" style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+        <div className="glass-panel col-span-8 flex-row-responsive" style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
           <div className="circular-progress" style={{ '--progress': `${student.overallAttendance}%` }}>
             <div className="circular-progress-value">{student.overallAttendance}%</div>
           </div>
@@ -52,7 +52,7 @@ const StudentDashboard = () => {
 
         {/* Exam Eligibility Predictor */}
         <div className="glass-panel col-span-12">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <div className="header-responsive" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
             <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Award className="text-blue-500" /> Exam Eligibility Predictor
             </h2>
@@ -61,7 +61,7 @@ const StudentDashboard = () => {
             </div>
           </div>
           
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px' }}>
+          <div className="grid-3-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px' }}>
             <div>
               <p style={{ fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Current Status</p>
               <h3 style={{ fontSize: '24px', marginTop: '4px' }}>{isEligibleNow ? 'YES' : 'NO'}</h3>
@@ -85,7 +85,7 @@ const StudentDashboard = () => {
         {/* Subjects Overview Mini */}
         <div className="col-span-12">
           <h3 style={{ marginBottom: '16px' }}>Subject Breakdown</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+          <div className="grid-2-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
             {subjects.map(sub => (
               <div key={sub.id} className="glass-panel" style={{ padding: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
