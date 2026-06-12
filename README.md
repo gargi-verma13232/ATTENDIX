@@ -42,6 +42,5 @@ src/
 └── index.css       # Global Tailwind imports
 ```
 
-## Deployment
-This project is continuously deployed to Netlify via continuous deployment. Any changes pushed to the `main` branch are automatically built (`npm run build`) and the `dist` directory is published live.
+
 
