@@ -309,3 +309,50 @@ p {
   font-size: 16px;
   color: var(--text-muted);
 }
+
+/* Light Theme Variables & Overrides */
+body.light-theme {
+  --bg-color: #F3F4F6;
+  --panel-bg: rgba(255, 255, 255, 0.8);
+  --panel-border: rgba(0, 0, 0, 0.05);
+  --text-main: #111827;
+  --text-muted: #4B5563;
+  
+  --status-safe-bg: rgba(16, 185, 129, 0.2);
+  --status-warning-bg: rgba(245, 158, 11, 0.2);
+  --status-critical-bg: rgba(239, 68, 68, 0.2);
+}
+
+body.light-theme .app-container {
+  background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 40%),
+              radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.1), transparent 40%);
+}
+
+body.light-theme .sidebar {
+  background-color: rgba(243, 244, 246, 0.8);
+}
+
+body.light-theme .nav-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme .btn-secondary {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--panel-border);
+}
+
+body.light-theme .btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .circular-progress::before {
+  background: var(--bg-color); 
+}
+
+body.light-theme ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}

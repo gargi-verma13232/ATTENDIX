@@ -26,27 +26,6 @@ A modern, comprehensive attendance management and academic tracking application 
 - **Icons:** Lucide React for consistent, beautiful iconography.
 - **Data Layer:** Context API with a custom `MockDataProvider` to simulate backend API responses.
 
-## Getting Started
-
-To run this project locally:
-
-1. **Clone and enter the directory:**
-   ```bash
-   git clone <repository-url>
-   cd attendix
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Run the development server:**
-   ```bash
-   npm run dev
-   ```
-
-4. Open `http://localhost:5173` in your browser.
 
 ## Project Structure
 ```text
