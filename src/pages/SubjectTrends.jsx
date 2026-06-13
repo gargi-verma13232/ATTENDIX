@@ -1,7 +1,24 @@
-import React from 'react';
 import { useMockData } from '../MockDataContext';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { TrendingUp } from 'lucide-react';
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div style={{ background: 'rgba(11, 14, 20, 0.9)', border: '1px solid var(--panel-border)', padding: '12px', borderRadius: '8px', backdropFilter: 'blur(8px)' }}>
+        <p style={{ fontWeight: 'bold', marginBottom: '8px', color: 'white' }}>{label}</p>
+        {payload.map((entry, index) => (
+          <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: entry.color }}></div>
+            <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{entry.name}:</span>
+            <span style={{ fontSize: '13px', fontWeight: 'bold', color: entry.value < 75 ? 'var(--status-critical)' : 'white' }}>{entry.value}%</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
 
 const SubjectTrends = () => {
   const { attendanceTrend } = useMockData();
@@ -11,24 +28,6 @@ const SubjectTrends = () => {
     'Database Systems': '#8B5CF6',
     'Operating Systems': '#10B981',
     'Communication Skills': '#F59E0B'
-  };
-
-  const CustomTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      return (
-        <div style={{ background: 'rgba(11, 14, 20, 0.9)', border: '1px solid var(--panel-border)', padding: '12px', borderRadius: '8px', backdropFilter: 'blur(8px)' }}>
-          <p style={{ fontWeight: 'bold', marginBottom: '8px', color: 'white' }}>{label}</p>
-          {payload.map((entry, index) => (
-            <div key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: entry.color }}></div>
-              <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{entry.name}:</span>
-              <span style={{ fontSize: '13px', fontWeight: 'bold', color: entry.value < 75 ? 'var(--status-critical)' : 'white' }}>{entry.value}%</span>
-            </div>
-          ))}
-        </div>
-      );
-    }
-    return null;
   };
 
   return (

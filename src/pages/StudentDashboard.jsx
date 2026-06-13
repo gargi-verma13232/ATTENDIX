@@ -1,6 +1,6 @@
-import React from 'react';
+
 import { useMockData } from '../MockDataContext';
-import { Flame, Award, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Flame, Award, AlertTriangle, CheckCircle } from 'lucide-react';
 
 const StudentDashboard = () => {
   const { student, subjects } = useMockData();

@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 const MockDataContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useMockData = () => useContext(MockDataContext);
 
 export const MockDataProvider = ({ children }) => {

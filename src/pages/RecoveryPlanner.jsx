@@ -1,4 +1,3 @@
-import React from 'react';
 import { useMockData } from '../MockDataContext';
 import { HeartPulse, CheckCircle, AlertTriangle, XCircle, Calendar } from 'lucide-react';
 
@@ -39,7 +38,7 @@ const RecoveryPlanner = () => {
 
       <div className="dashboard-grid">
         {subjects.map(sub => {
-          const { isSafe, classesNeeded, safeLeaves, remainingClasses } = calculateRecovery(sub);
+          const { isSafe, classesNeeded, safeLeaves } = calculateRecovery(sub);
           const statusClass = isSafe ? 'safe' : sub.attendance >= 65 ? 'warning' : 'critical';
           const StatusIcon = isSafe ? CheckCircle : sub.attendance >= 65 ? AlertTriangle : XCircle;
 
