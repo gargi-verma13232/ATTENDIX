@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 const MockDataContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useMockData = () => useContext(MockDataContext);
 
 // Initial mock data definitions
