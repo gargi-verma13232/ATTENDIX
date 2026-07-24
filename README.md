@@ -3,7 +3,7 @@
 A modern, comprehensive attendance management and academic tracking application built specifically for students. It empowers students to monitor their attendance, plan recovery strategies, and rectify discrepancies through a seamless, intuitive interface.
 
 ## Live Demo
-[View Live Project](https://attendixxy.netlify.app/login)
+[View Live Project](https://attendixz.netlify.app/login)
 
 ## Core Modules & Features
 
