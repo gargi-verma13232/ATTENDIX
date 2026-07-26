@@ -15,6 +15,8 @@ import {
   Shield,
   Bell,
   Flame,
+  MessageSquare,
+  Database
 } from 'lucide-react';
 
 
@@ -199,8 +201,16 @@ const Sidebar = () => {
               onClick={() => { setActiveSection('admin-data'); navigate('/admin'); closeMobile(); }}
             >
               {activeSection === 'admin-data' && <span className="nav-active-bar" />}
-              <FileText size={20} />
-              Data &amp; GPS Config
+              <Database size={20} />
+              Data Manager
+            </button>
+            <button
+              style={adminLinkStyle('admin-comm-hub')}
+              onClick={() => { setActiveSection('admin-comm-hub'); navigate('/admin'); closeMobile(); }}
+            >
+              {activeSection === 'admin-comm-hub' && <span className="nav-active-bar" />}
+              <MessageSquare size={20} />
+              Communication Hub
             </button>
           </>
         )}

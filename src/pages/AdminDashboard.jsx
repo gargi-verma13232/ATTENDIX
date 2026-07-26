@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useMockData } from '../MockDataContext';
 import {
   Shield, Users, Award, AlertTriangle, Settings, Save, Check, Ban,
-  Search, Filter, TrendingUp, Zap, Bell, Database, Plus, MapPin, Navigation, UserPlus, Eye, X
+  Search, Filter, TrendingUp, Zap, Bell, Database, Plus, MapPin, Navigation, UserPlus, Eye, X, MessageSquare, Send
 } from 'lucide-react';
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
@@ -80,6 +80,22 @@ const AdminDashboard = () => {
   const [odStudentIds, setOdStudentIds] = useState('');
   const [odPolicy, setOdPolicy] = useState('Auto-Approve');
   const [odStatus, setOdStatus] = useState({ success: null, message: '' });
+
+  // Communication Hub
+  const [commTargetType, setCommTargetType] = useState('student');
+  const [commTargetAudience, setCommTargetAudience] = useState('All');
+  const [commCategory, setCommCategory] = useState('General Notice');
+  const [commMessage, setCommMessage] = useState('');
+  const [commStatus, setCommStatus] = useState({ success: null, message: '' });
+
+  const handleCommSubmit = (e) => {
+    e.preventDefault();
+    if (!commMessage.trim()) return;
+    dispatchAdminPushNotice(`[${commCategory}] Alert to ${commTargetAudience}`, commMessage, commTargetType);
+    setCommStatus({ success: true, message: `Push notification sent to ${commTargetType}s successfully.` });
+    setCommMessage('');
+    setTimeout(() => setCommStatus({ success: null, message: '' }), 4000);
+  };
 
   // Directory search
   const [searchQuery, setSearchQuery] = useState('');
@@ -798,6 +814,134 @@ const AdminDashboard = () => {
                   })}
               </div>
             )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ══════════════════════════════════════════════
+  // Section: Communication Hub
+  // ══════════════════════════════════════════════
+  if (activeSection === 'admin-comm-hub') {
+    return (
+      <div className="dashboard-content">
+        <div className="page-header">
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <MessageSquare color="var(--accent-primary)" /> Communication Hub
+          </h1>
+          <p className="page-subtitle">Push targeted alerts, policy updates, and recovery notices to user cohorts.</p>
+        </div>
+
+        <div className="dashboard-grid">
+          <div className="glass-panel col-span-8">
+            <h2 style={{ marginBottom: '20px' }}>Compose Push Notification</h2>
+            
+            {commStatus.message && (
+              <div style={{ padding: '12px', borderRadius: '8px', fontSize: '13px', fontWeight: '500', marginBottom: '20px', background: commStatus.success ? 'var(--status-safe-bg)' : 'var(--status-critical-bg)', color: commStatus.success ? 'var(--status-safe)' : 'var(--status-critical)', border: commStatus.success ? '1px solid rgba(16,185,129,0.2)' : '1px solid rgba(239,68,68,0.2)' }}>
+                {commStatus.success ? <Check size={14} style={{ display: 'inline', marginRight: '6px' }} /> : <AlertTriangle size={14} style={{ display: 'inline', marginRight: '6px' }} />}
+                {commStatus.message}
+              </div>
+            )}
+
+            <form onSubmit={handleCommSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={() => setCommTargetType('student')}
+                  className={`btn ${commTargetType === 'student' ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ flex: 1 }}
+                >
+                  Target Students
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCommTargetType('teacher')}
+                  className={`btn ${commTargetType === 'teacher' ? 'btn-primary' : 'btn-secondary'}`}
+                  style={{ flex: 1 }}
+                >
+                  Target Teachers
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="input-group">
+                  <label>Target Audience ({commTargetType === 'student' ? 'Cohort' : 'Department'})</label>
+                  <select 
+                    className="form-control" 
+                    value={commTargetAudience} 
+                    onChange={e => setCommTargetAudience(e.target.value)}
+                  >
+                    <option value="All">All {commTargetType === 'student' ? 'Students' : 'Teachers'}</option>
+                    {commTargetType === 'student' ? (
+                      <>
+                        <option value="CSE Batch 2024">CSE Batch 2024</option>
+                        <option value="ECE Batch 2024">ECE Batch 2024</option>
+                        <option value="Section A">Section A</option>
+                        <option value="Shortage Cohort (<75%)">Shortage Cohort (&lt;75%)</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="CSE Department">CSE Department</option>
+                        <option value="ECE Department">ECE Department</option>
+                        <option value="HODs Only">HODs Only</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+                <div className="input-group">
+                  <label>Message Category</label>
+                  <select 
+                    className="form-control" 
+                    value={commCategory} 
+                    onChange={e => setCommCategory(e.target.value)}
+                  >
+                    <option value="General Notice">General Notice</option>
+                    {commTargetType === 'student' ? (
+                      <>
+                        <option value="OD Clearance">OD Clearance</option>
+                        <option value="Exam Alert">Exam Alert</option>
+                        <option value="Recovery Schedule">Recovery Schedule</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Compliance">Compliance & Deadlines</option>
+                        <option value="Slot Allocation">Slot Allocation</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+              </div>
+
+              <div className="input-group">
+                <label>Message Content</label>
+                <textarea 
+                  className="form-control" 
+                  rows={4} 
+                  placeholder="Type your alert message here..." 
+                  value={commMessage}
+                  onChange={e => setCommMessage(e.target.value)}
+                  style={{ resize: 'vertical' }}
+                  required
+                />
+              </div>
+
+              <button type="submit" className="btn btn-primary" style={{ padding: '14px 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <Send size={18} /> Send Push Notification
+              </button>
+            </form>
+          </div>
+
+          <div className="glass-panel col-span-4" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <h3>Communication Policies</h3>
+            <div style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+              <p style={{ marginBottom: '12px' }}>
+                <strong>Student Alerts:</strong> High priority messages (Exam Alerts, OD Clearance) will trigger a push notification directly to the student's mobile device.
+              </p>
+              <p>
+                <strong>Teacher Alerts:</strong> Alerts for faculty members will be pinned to the top of their dashboard for immediate compliance action.
+              </p>
+            </div>
           </div>
         </div>
       </div>

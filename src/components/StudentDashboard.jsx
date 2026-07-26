@@ -21,6 +21,7 @@ import {
   XCircle,
   AlertCircle,
   Clock
+} from 'lucide-react';
 
 const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
   const toRad = (value) => (value * Math.PI) / 180;
@@ -43,6 +44,11 @@ const StudentDashboard = () => {
     getSessionNotes,
     logStudentAttendanceScan,
     notifications,
+    activeSessionQR,
+    verifyStudentTimetable,
+    incrementLiveScanCount,
+    submitDocument,
+    studentDocuments,
   } = useMockData();
 
   // Exam Eligibility calculation
@@ -75,9 +81,59 @@ const StudentDashboard = () => {
   const videoRef = useRef(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [scanSuccessMessage, setScanSuccessMessage] = useState('');
+  const [scanErrorMessage, setScanErrorMessage] = useState('');
+
+  // Handle ESC key for Scanner Modal
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape' && showScannerModal) {
+        setShowScannerModal(false);
+        setCameraActive(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [showScannerModal]);
 
   // Catch-Up Modal state
   const [selectedCatchupSession, setSelectedCatchupSession] = useState(null);
+
+  // Document Upload state
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadDocType, setUploadDocType] = useState('Medical Certificate');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      setSelectedFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleDocumentSubmit = (e) => {
+    e.preventDefault();
+    if (!selectedFile) return;
+    setIsUploading(true);
+    let prog = 0;
+    const interval = setInterval(() => {
+      prog += 25;
+      setUploadProgress(prog);
+      if (prog >= 100) {
+        clearInterval(interval);
+        submitDocument({
+          type: uploadDocType,
+          fileName: selectedFile.name,
+          size: `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`
+        });
+        setIsUploading(false);
+        setShowUploadModal(false);
+        setSelectedFile(null);
+        setUploadProgress(0);
+      }
+    }, 250);
+  };
 
   // Manage Camera Stream
   useEffect(() => {
@@ -159,7 +215,16 @@ const StudentDashboard = () => {
 
   const handleConfirmScan = () => {
     if (!biometricUnlocked || !isGpsValid) return;
-    logStudentAttendanceScan('cs-301', '2026-07-26', 'slot-1');
+
+    // Cross-check Timetable
+    if (!activeSessionQR || !verifyStudentTimetable(activeSessionQR.courseId)) {
+      setScanErrorMessage('Invalid Attempt: Attendance is marked failed as this subject is not in your current timetable slot.');
+      setTimeout(() => setScanErrorMessage(''), 4000);
+      return;
+    }
+
+    logStudentAttendanceScan(activeSessionQR.courseId, new Date().toISOString().split('T')[0], activeSessionQR.slotId);
+    incrementLiveScanCount();
     setScanSuccessMessage('Attendance verified & logged successfully via WebAuthn Biometrics + GPS!');
     setTimeout(() => {
       setScanSuccessMessage('');
@@ -422,16 +487,61 @@ const StudentDashboard = () => {
                           color: '#fff',
                           border: '1px solid var(--accent-secondary)',
                           padding: '6px 12px',
-                          fontSize: '12px',
+                          fontSize: '11px',
                         }}
                       >
-                        <BookOpen size={13} /> View Catch-Up Notes
+                        Catch-Up
                       </button>
                     )}
                   </div>
                 </motion.div>
               );
             })}
+          </div>
+        </div>
+
+        {/* DOCUMENT CENTER */}
+        <div className="glass-panel col-span-12">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div>
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FileText className="text-blue-500" /> Document Center
+              </h2>
+              <p style={{ fontSize: '13px', marginTop: '4px' }}>
+                Upload Medical Certificates, OD Proofs, or Leave Applications for Admin approval.
+              </p>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              onClick={() => setShowUploadModal(true)}
+              className="btn btn-primary"
+              style={{ padding: '10px 16px', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <FileText size={18} /> Upload Document
+            </motion.button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+            {studentDocuments.length === 0 ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
+                No documents uploaded yet.
+              </div>
+            ) : (
+              studentDocuments.map(doc => (
+                <div key={doc.id} className="glass-panel" style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ padding: '12px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '12px', color: 'var(--accent-primary)' }}>
+                      <FileText size={24} />
+                    </div>
+                    <div>
+                      <h4 style={{ fontSize: '15px', marginBottom: '4px' }}>{doc.fileName}</h4>
+                      <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{doc.type} • {doc.size}</p>
+                    </div>
+                  </div>
+                  <div className="status-badge warning" style={{ fontSize: '12px' }}>{doc.status}</div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -441,10 +551,16 @@ const StudentDashboard = () => {
         {showScannerModal && (
           <div
             className="modal-backdrop"
+            onClick={(e) => {
+              if (e.target.classList.contains('modal-backdrop')) {
+                setShowScannerModal(false);
+                setCameraActive(false);
+              }
+            }}
             style={{
               position: 'fixed',
               inset: 0,
-              background: 'rgba(0, 0, 0, 0.88)',
+              background: 'rgba(0, 0, 0, 0.85)',
               backdropFilter: 'blur(12px)',
               display: 'flex',
               alignItems: 'center',
@@ -647,10 +763,16 @@ const StudentDashboard = () => {
                 </div>
               </div>
 
+              {scanErrorMessage && (
+                <div style={{ marginTop: '12px', background: 'rgba(239, 68, 68, 0.1)', color: 'var(--status-critical)', padding: '12px', borderRadius: '12px', fontSize: '13px', fontWeight: '600', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+                  <AlertCircle size={16} style={{ display: 'inline', marginRight: '6px' }} />
+                  {scanErrorMessage}
+                </div>
+              )}
+
               {scanSuccessMessage && (
-                <div className="alert-success" style={{ marginBottom: '12px' }}>
-                  <CheckCircle2 size={18} />
-                  {scanSuccessMessage}
+                <div className="alert-success" style={{ marginTop: '12px' }}>
+                  <CheckCircle2 size={16} /> {scanSuccessMessage}
                 </div>
               )}
 
@@ -660,6 +782,7 @@ const StudentDashboard = () => {
                 className="btn btn-primary"
                 style={{
                   width: '100%',
+                  marginTop: '16px',
                   padding: '14px',
                   fontSize: '15px',
                   opacity: !biometricUnlocked || !isGpsValid ? 0.4 : 1,
@@ -820,6 +943,149 @@ const StudentDashboard = () => {
                   })()}
                 </div>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* DOCUMENT UPLOAD MODAL */}
+      <AnimatePresence>
+        {showUploadModal && (
+          <div
+            className="modal-backdrop"
+            onClick={(e) => {
+              if (e.target.classList.contains('modal-backdrop') && !isUploading) {
+                setShowUploadModal(false);
+                setSelectedFile(null);
+              }
+            }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0, 0, 0, 0.85)',
+              backdropFilter: 'blur(12px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1050,
+              padding: '24px',
+            }}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="glass-panel"
+              style={{
+                maxWidth: '520px',
+                width: '100%',
+                padding: '32px',
+                borderRadius: '24px',
+                position: 'relative',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                <h3 style={{ fontSize: '22px', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                  <FileText className="text-blue-500" /> Upload Document
+                </h3>
+                <button
+                  onClick={() => { if (!isUploading) { setShowUploadModal(false); setSelectedFile(null); } }}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: isUploading ? 'not-allowed' : 'pointer' }}
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <form onSubmit={handleDocumentSubmit}>
+                <div className="input-group" style={{ marginBottom: '20px' }}>
+                  <label>Document Type</label>
+                  <select 
+                    className="form-control" 
+                    value={uploadDocType} 
+                    onChange={e => setUploadDocType(e.target.value)}
+                    disabled={isUploading}
+                  >
+                    <option>Medical Certificate</option>
+                    <option>OD Proof (Extracurricular)</option>
+                    <option>Leave Application</option>
+                  </select>
+                </div>
+
+                <div 
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={handleFileDrop}
+                  style={{
+                    border: `2px dashed ${selectedFile ? 'var(--accent-primary)' : 'var(--panel-border)'}`,
+                    background: selectedFile ? 'rgba(59, 130, 246, 0.05)' : 'rgba(0,0,0,0.2)',
+                    borderRadius: '16px',
+                    padding: '32px',
+                    textAlign: 'center',
+                    marginBottom: '24px',
+                    transition: 'all 0.3s ease',
+                    position: 'relative'
+                  }}
+                >
+                  <input 
+                    type="file" 
+                    id="file-upload" 
+                    onChange={e => { if (e.target.files[0]) setSelectedFile(e.target.files[0]); }}
+                    style={{ display: 'none' }}
+                    disabled={isUploading}
+                  />
+                  
+                  {!selectedFile ? (
+                    <>
+                      <FileText size={48} color="var(--text-muted)" style={{ margin: '0 auto 16px' }} />
+                      <p style={{ fontSize: '15px', fontWeight: '500', marginBottom: '8px' }}>Drag & Drop your file here</p>
+                      <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>PDF, JPG, PNG (Max 5MB)</p>
+                      <label htmlFor="file-upload" className="btn btn-secondary" style={{ cursor: 'pointer', display: 'inline-block' }}>
+                        Browse Files
+                      </label>
+                    </>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', justifyContent: 'center' }}>
+                      <div style={{ padding: '16px', background: 'var(--panel-bg)', borderRadius: '12px' }}>
+                        <FileText size={32} color="var(--accent-primary)" />
+                      </div>
+                      <div style={{ textAlign: 'left' }}>
+                        <h4 style={{ fontSize: '15px', marginBottom: '4px' }}>{selectedFile.name}</h4>
+                        <p style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                        {!isUploading && (
+                          <button 
+                            type="button" 
+                            onClick={(e) => { e.preventDefault(); setSelectedFile(null); }}
+                            style={{ background: 'transparent', border: 'none', color: 'var(--status-critical)', fontSize: '12px', marginTop: '8px', cursor: 'pointer', padding: 0 }}
+                          >
+                            Remove File
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {isUploading && (
+                  <div style={{ marginBottom: '24px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '8px', color: 'var(--text-muted)' }}>
+                      <span>Uploading...</span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <div style={{ width: '100%', height: '6px', background: 'var(--panel-border)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--accent-primary)', transition: 'width 0.2s ease' }} />
+                    </div>
+                  </div>
+                )}
+
+                <button 
+                  type="submit" 
+                  className="btn btn-primary" 
+                  style={{ width: '100%', padding: '14px', fontSize: '15px', opacity: !selectedFile || isUploading ? 0.5 : 1 }}
+                  disabled={!selectedFile || isUploading}
+                >
+                  {isUploading ? 'Uploading Document...' : 'Submit for Approval'}
+                </button>
+              </form>
             </motion.div>
           </div>
         )}

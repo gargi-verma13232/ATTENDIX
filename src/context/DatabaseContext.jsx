@@ -165,9 +165,9 @@ const INITIAL_STUDENTS = {
   },
 };
 
-const INITIAL_FACULTY = [
-  { id: 'FAC-2024-001', name: 'Dr. R. Mehta', department: 'Computer Science', courses: ['CS101', 'CS102'] },
-];
+const INITIAL_FACULTY = {
+  'FAC-2024-001': { id: 'FAC-2024-001', name: 'Dr. R. Mehta', department: 'Computer Science', courses: ['CS101', 'CS102'] },
+};
 
 const INITIAL_RECTIFICATIONS = [
   {
@@ -236,8 +236,8 @@ const INITIAL_USERS = {
 };
 
 const INITIAL_CAMPUS_CONFIG = {
-  lat: 28.4595,
-  lng: 77.0266,
+  latitude: 28.4595,
+  longitude: 77.0266,
   radiusMeters: 200,
   enforceGeofence: true,
 };
@@ -266,6 +266,12 @@ export const DatabaseProvider = ({ children }) => {
         const parsed = JSON.parse(saved);
         // Ensure sessionLogs exists in older stored state
         if (!parsed.sessionLogs) parsed.sessionLogs = INITIAL_SESSION_LOGS;
+        // Migrate faculty from array to object if stale localStorage
+        if (Array.isArray(parsed.faculty)) {
+          const facultyObj = {};
+          parsed.faculty.forEach(f => { facultyObj[f.id] = f; });
+          parsed.faculty = facultyObj;
+        }
         return parsed;
       } catch (e) {
         console.error('Failed to parse persisted database state, resetting.', e);
@@ -330,7 +336,10 @@ export const DatabaseProvider = ({ children }) => {
   const addFaculty = (newFaculty) => {
     setDbState(prev => ({
       ...prev,
-      faculty: Array.isArray(prev.faculty) ? [...prev.faculty, newFaculty] : [newFaculty],
+      faculty: {
+        ...(prev.faculty || {}),
+        [newFaculty.id]: newFaculty,
+      },
       users: {
         ...prev.users,
         [newFaculty.id]: {
@@ -343,6 +352,26 @@ export const DatabaseProvider = ({ children }) => {
         },
       },
     }));
+  };
+
+  const removeStudent = (id) => {
+    setDbState(prev => {
+      const updatedStudents = { ...prev.students };
+      const updatedUsers = { ...prev.users };
+      delete updatedStudents[id];
+      delete updatedUsers[id];
+      return { ...prev, students: updatedStudents, users: updatedUsers };
+    });
+  };
+
+  const removeFaculty = (id) => {
+    setDbState(prev => {
+      const updatedFaculty = { ...(prev.faculty || {}) };
+      const updatedUsers = { ...prev.users };
+      delete updatedFaculty[id];
+      delete updatedUsers[id];
+      return { ...prev, faculty: updatedFaculty, users: updatedUsers };
+    });
   };
 
   // ── Session Logger ────────────────────────────
@@ -603,6 +632,8 @@ export const DatabaseProvider = ({ children }) => {
         logout,
         addStudent,
         addFaculty,
+        removeStudent,
+        removeFaculty,
         addSessionLog,
         resolveRectification,
         bulkDispatchOD,

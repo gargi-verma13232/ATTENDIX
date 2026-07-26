@@ -8,6 +8,7 @@ import {
   defaultSessionNotes,
   initialOdRequests,
   institutionalNotices,
+  dailyTimetable,
 } from './data/mockData';
 
 const EnhancedContext = createContext();
@@ -152,6 +153,49 @@ export const MockDataProvider = ({ children }) => {
     { id: 'STU-2024-002', name: 'Ananya Sharma', time: '09:02 AM', method: 'Biometric + GPS' },
     { id: 'STU-2024-004', name: 'Rohan Gupta', time: '09:04 AM', method: 'Biometric + GPS' },
   ]);
+
+  const incrementLiveScanCount = () => {
+    setLiveScanCount(prev => prev + 1);
+  };
+
+  // Dynamic QR Tracking
+  const [activeSessionQR, setActiveSessionQR] = useState(null);
+  
+  const startSessionQR = (courseId, slotId, section, token) => {
+    setActiveSessionQR({ courseId, slotId, section, token });
+  };
+  
+  const stopSessionQR = () => {
+    setActiveSessionQR(null);
+  };
+
+  // Verify if course is in today's timetable
+  const verifyStudentTimetable = (courseId) => {
+    // Assuming dailyTimetable has subject names, we will check if courseId maps to a subject in dailyTimetable
+    // In our mockData, dailyTimetable has { subject: "Database Systems", ... }
+    // Let's do a simple fuzzy match or return true for demo if not strictly enforceable
+    const validCourseCodes = {
+      'cs-301': 'Data Structures',
+      'cs-302': 'Database Systems',
+      'cs-303': 'Computer Networks'
+    };
+    const courseName = validCourseCodes[courseId];
+    if (!courseName) return false;
+    return dailyTimetable.some(slot => slot.subject.includes(courseName));
+  };
+
+  // Student Document Uploads
+  const [studentDocuments, setStudentDocuments] = useState([]);
+  
+  const submitDocument = (doc) => {
+    const newDoc = {
+      id: `doc-${Date.now()}`,
+      ...doc,
+      status: 'Pending Admin Approval',
+      submittedAt: new Date().toISOString().split('T')[0]
+    };
+    setStudentDocuments(prev => [newDoc, ...prev]);
+  };
 
   // Timetable Recovery Planner State
   const [cancelledClasses, setCancelledClasses] = useState([
@@ -320,6 +364,13 @@ export const MockDataProvider = ({ children }) => {
     createRecoveryClass,
     notifications,
     dispatchAdminPushNotice,
+    activeSessionQR,
+    startSessionQR,
+    stopSessionQR,
+    incrementLiveScanCount,
+    verifyStudentTimetable,
+    studentDocuments,
+    submitDocument,
     adminTargetAudience,
     setAdminTargetAudience,
     adminPreviewRole,

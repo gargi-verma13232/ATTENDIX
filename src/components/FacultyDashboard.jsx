@@ -43,10 +43,11 @@ const FacultyDashboard = () => {
     odRequests,
     updateRequestStatus,
     jumpToClassRegister,
-    notices,
     liveScanCount,
     scannedStudentsList,
     campusConfig,
+    startSessionQR,
+    stopSessionQR
   } = useMockData();
 
   // QR Generator state & Section picker
@@ -70,24 +71,35 @@ const FacultyDashboard = () => {
     setSaveMessage('');
   }, [selectedCourse, selectedDate, selectedSlot]);
 
-  // 30-Second Auto-Refreshing Live QR Token Effect
+  // 30-Second Auto-Refreshing Live QR Token Effect & Context Sync
   useEffect(() => {
-    if (!showQrModal) return;
+    if (!showQrModal) {
+      stopSessionQR();
+      return;
+    }
+
+    // Sync initial token
+    startSessionQR(selectedCourse, selectedSlot, selectedSection, qrToken);
 
     const interval = setInterval(() => {
       setQrCountdown(prev => {
         if (prev <= 1) {
           const randomHash = Math.random().toString(36).substring(2, 6).toUpperCase();
           const randomNum = Math.floor(1000 + Math.random() * 9000);
-          setQrToken(`ATTX-LIVE-${randomHash}-${randomNum}`);
+          const newToken = `ATTX-LIVE-${randomHash}-${randomNum}`;
+          setQrToken(newToken);
+          startSessionQR(selectedCourse, selectedSlot, selectedSection, newToken);
           return 30;
         }
         return prev - 1;
       });
     }, 1000);
 
-    return () => clearInterval(interval);
-  }, [showQrModal]);
+    return () => {
+      clearInterval(interval);
+      stopSessionQR();
+    };
+  }, [showQrModal, selectedCourse, selectedSlot, selectedSection]);
 
   // Session roster & attendance stats
   const currentRoster = getSessionRoster(selectedCourse, selectedDate, selectedSlot);
