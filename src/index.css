@@ -643,4 +643,182 @@ body.light-theme .panel-inset {
   background: rgba(0, 0, 0, 0.03);
 }
 
+/* ==========================================================================
+   Mobile Drawer & Touch Target Adjustments
+   ========================================================================== */
+
+/* Top Navbar (Mobile Header) */
+.top-navbar {
+  display: none;
+  height: 60px;
+  background-color: rgba(11, 14, 20, 0.9);
+  border-bottom: 1px solid var(--panel-border);
+  backdrop-filter: blur(12px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  align-items: center;
+  padding: 0 20px;
+  gap: 16px;
+}
+body.light-theme .top-navbar {
+  background-color: rgba(243, 244, 246, 0.9);
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.hamburger-btn {
+  background: none;
+  border: none;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  min-height: 44px;
+  min-width: 44px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+.hamburger-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+body.light-theme .hamburger-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.top-navbar-title {
+  font-size: 20px;
+  font-weight: 800;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Sidebar Backdrop overlay */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 98;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Base minimum tap target size adjustments for buttons, inputs, selects, links */
+.btn,
+.form-control,
+.input-wrapper input,
+.nav-item,
+select {
+  min-height: 44px;
+}
+
+/* Media Query for Viewports < 768px */
+@media (max-width: 768px) {
+  /* Show Mobile Header */
+  .top-navbar {
+    display: flex;
+  }
+
+  /* Adjust App Container and padding */
+  .app-container {
+    flex-direction: column;
+    padding-top: 60px; /* offset top-navbar height */
+  }
+
+  /* Hide fixed sidebar off-screen and add sliding drawer animation */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 280px;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 99;
+    box-shadow: 0 0 24px rgba(0, 0, 0, 0.5);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  /* Adjust Main Content and Main Window to reset margin/padding on mobile */
+  .main-content,
+  .main-window {
+    margin-left: 0 !important;
+    padding: 1rem !important; /* Reduce padding on mobile */
+    max-width: 100% !important;
+  }
+
+  .content-wrapper {
+    padding: 1rem !important;
+  }
+
+  /* Responsive Grid & Layout Stacking */
+  .dashboard-grid,
+  .grid-3,
+  .grid-2,
+  .sim-grid,
+  .faculty-grid,
+  .policy-group,
+  .split-col,
+  .res-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  .col-span-12,
+  .col-span-8,
+  .col-span-6,
+  .col-span-4,
+  .col-span-3 {
+    grid-column: span 12 !important;
+    width: 100% !important;
+  }
+
+  /* Table and SVG scrollable wrappers */
+  .modern-table-container,
+  .table-responsive,
+  .modern-table,
+  table,
+  svg {
+    overflow-x: auto !important;
+    display: block;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Touch sizing adjustments for input grids */
+  .form-control,
+  input,
+  select,
+  button,
+  textarea {
+    font-size: 16px !important; /* Prevent iOS browser auto-zoom on focus */
+  }
+
+  /* Center task drawer modal overlay */
+  .task-drawer {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 92% !important;
+    max-width: 500px !important;
+    z-index: 150 !important;
+    margin: 0 !important;
+  }
+}
+
+
 

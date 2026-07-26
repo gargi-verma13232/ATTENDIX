@@ -3,9 +3,280 @@ import { useMockData } from '../MockDataContext';
 import { Shield, Users, Award, AlertTriangle, Settings, Save, Check, Ban, Search, Filter } from 'lucide-react';
 
 const AdminDashboard = () => {
-  const { students, rectificationRequests } = useMockData();
+  const { dbState, students, rectificationRequests, activeSection, addStudent, resetDB, importJSONState } = useMockData();
   const [requiredThreshold, setRequiredThreshold] = useState(75);
   const [isSaved, setIsSaved] = useState(false);
+
+  // States for Quick Add Student Form
+  const [studentId, setStudentId] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [department, setDepartment] = useState('');
+  const [examScore, setExamScore] = useState('');
+  const [addStatus, setAddStatus] = useState({ success: null, message: '' });
+
+  // States for JSON Backup & Import Hub
+  const [rawJSON, setRawJSON] = useState('');
+  const [importStatus, setImportStatus] = useState({ success: null, message: '' });
+  const [copyStatus, setCopyStatus] = useState(false);
+
+  const handleAddStudentSubmit = (e) => {
+    e.preventDefault();
+    if (!studentId || !fullName || !department || !examScore) {
+      setAddStatus({ success: false, message: 'All fields are required.' });
+      return;
+    }
+
+    const score = parseInt(examScore);
+    if (isNaN(score) || score < 0 || score > 100) {
+      setAddStatus({ success: false, message: 'Internal exam score must be a number between 0 and 100.' });
+      return;
+    }
+
+    // Check if student already exists
+    if (students[studentId]) {
+      setAddStatus({ success: false, message: 'A student with this ID already exists.' });
+      return;
+    }
+
+    // Construct student object with default timetable/course structures
+    const newStudentObj = {
+      id: studentId.trim(),
+      name: fullName.trim(),
+      role: 'student',
+      overallAttendance: score,
+      streak: 0,
+      totalClasses: 100,
+      classesAttended: score,
+      requiredAttendance: 75,
+      branch: department.trim(),
+      year: '1st Year',
+      nextBadge: 'Getting Started',
+      subjects: [
+        { id: 'CS101', name: 'Data Structures', attendance: score, classesHeld: 25, classesAttended: Math.round(25 * (score / 100)) },
+        { id: 'CS102', name: 'Database Systems', attendance: score, classesHeld: 25, classesAttended: Math.round(25 * (score / 100)) },
+        { id: 'CS103', name: 'Operating Systems', attendance: score, classesHeld: 25, classesAttended: Math.round(25 * (score / 100)) },
+        { id: 'HU101', name: 'Communication Skills', attendance: score, classesHeld: 25, classesAttended: Math.round(25 * (score / 100)) },
+      ],
+      attendanceTrend: [
+        { week: 'Week 1', 'Data Structures': score, 'Database Systems': score, 'Operating Systems': score, 'Communication Skills': score },
+        { week: 'Week 2', 'Data Structures': score, 'Database Systems': score, 'Operating Systems': score, 'Communication Skills': score },
+        { week: 'Week 3', 'Data Structures': score, 'Database Systems': score, 'Operating Systems': score, 'Communication Skills': score },
+        { week: 'Week 4', 'Data Structures': score, 'Database Systems': score, 'Operating Systems': score, 'Communication Skills': score },
+        { week: 'Week 5', 'Data Structures': score, 'Database Systems': score, 'Operating Systems': score, 'Communication Skills': score }
+      ]
+    };
+
+    addStudent(newStudentObj);
+    setAddStatus({ success: true, message: `Successfully added student ${fullName} (${studentId})!` });
+    
+    // Clear inputs
+    setStudentId('');
+    setFullName('');
+    setDepartment('');
+    setExamScore('');
+    
+    // Reset status after 3 seconds
+    setTimeout(() => {
+      setAddStatus({ success: null, message: '' });
+    }, 3000);
+  };
+
+  const handleCopyJSON = () => {
+    navigator.clipboard.writeText(JSON.stringify(dbState, null, 2))
+      .then(() => {
+        setCopyStatus(true);
+        setTimeout(() => setCopyStatus(false), 2000);
+      })
+      .catch((err) => {
+        console.error('Failed to copy state to clipboard: ', err);
+      });
+  };
+
+  const handleImportJSONSubmit = (e) => {
+    e.preventDefault();
+    if (!rawJSON.trim()) {
+      setImportStatus({ success: false, message: 'Please enter JSON data.' });
+      return;
+    }
+
+    const res = importJSONState(rawJSON);
+    if (res.success) {
+      setImportStatus({ success: true, message: 'Database state successfully imported and applied!' });
+      setRawJSON('');
+      setTimeout(() => setImportStatus({ success: null, message: '' }), 3000);
+    } else {
+      setImportStatus({ success: false, message: `Import failed: ${res.error.message}` });
+    }
+  };
+
+  const handleResetDB = () => {
+    if (window.confirm('Are you sure you want to reset the database to initial mock data? This will clear all modifications.')) {
+      resetDB();
+      setImportStatus({ success: true, message: 'Database successfully reset to initial mock state.' });
+      setTimeout(() => setImportStatus({ success: null, message: '' }), 3000);
+    }
+  };
+
+  // If Data & User Manager activeSection is selected, render the manager view!
+  if (activeSection === 'admin-data') {
+    return (
+      <div className="dashboard-content">
+        <div className="page-header">
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Users color="var(--accent-primary)" /> Data & User Manager
+          </h1>
+          <p className="page-subtitle">Add students to mock database, copy database state backups, or load new JSON configurations.</p>
+        </div>
+
+        <div className="dashboard-grid">
+          {/* Card 1: Quick Add Student */}
+          <div className="glass-panel col-span-6">
+            <h2 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              Quick Add Student
+            </h2>
+            <form onSubmit={handleAddStudentSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="input-group">
+                <label>Student ID / Roll No</label>
+                <input 
+                  type="text" 
+                  value={studentId}
+                  onChange={(e) => setStudentId(e.target.value)}
+                  placeholder="e.g. STU-2024-003"
+                  className="form-control"
+                  required
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Full Name</label>
+                <input 
+                  type="text" 
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="e.g. Rachel Green"
+                  className="form-control"
+                  required
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Department / Branch</label>
+                <input 
+                  type="text" 
+                  value={department}
+                  onChange={(e) => setDepartment(e.target.value)}
+                  placeholder="e.g. B.Tech ECE"
+                  className="form-control"
+                  required
+                />
+              </div>
+
+              <div className="input-group">
+                <label>Internal Exam Attendance Score (%)</label>
+                <input 
+                  type="number" 
+                  min="0"
+                  max="100"
+                  value={examScore}
+                  onChange={(e) => setExamScore(e.target.value)}
+                  placeholder="e.g. 78"
+                  className="form-control"
+                  required
+                />
+              </div>
+
+              {addStatus.message && (
+                <div style={{ 
+                  padding: '12px', 
+                  borderRadius: '8px', 
+                  fontSize: '13px', 
+                  fontWeight: '500',
+                  textAlign: 'center',
+                  background: addStatus.success ? 'var(--status-safe-bg)' : 'var(--status-critical-bg)',
+                  color: addStatus.success ? 'var(--status-safe)' : 'var(--status-critical)',
+                  border: addStatus.success ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)'
+                }}>
+                  {addStatus.message}
+                </div>
+              )}
+
+              <button type="submit" className="btn btn-primary" style={{ padding: '12px 20px', marginTop: '8px' }}>
+                Add Student Record
+              </button>
+            </form>
+          </div>
+
+          {/* Card 2: Backup & JSON Data Hub */}
+          <div className="glass-panel col-span-6" style={{ display: 'flex', flexDirection: 'column' }}>
+            <h2 style={{ marginBottom: '20px' }}>
+              Backup & JSON Data Hub
+            </h2>
+            
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+              Generate copyable backup payloads of the database state or restore database state from a raw JSON configuration payload.
+            </p>
+
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+              <button 
+                onClick={handleCopyJSON} 
+                className="btn btn-secondary" 
+                style={{ flex: 1, padding: '12px' }}
+              >
+                {copyStatus ? '✓ Copied to Clipboard' : '📋 Copy JSON Backup'}
+              </button>
+              <button 
+                onClick={handleResetDB} 
+                className="btn btn-secondary" 
+                style={{ flex: 1, padding: '12px', color: 'var(--status-critical)', borderColor: 'rgba(239, 68, 68, 0.2)' }}
+              >
+                ⚠ Reset Database
+              </button>
+            </div>
+
+            <form onSubmit={handleImportJSONSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px', flex: 1 }}>
+              <div className="input-group" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <label>Paste Raw JSON Configuration</label>
+                <textarea 
+                  value={rawJSON}
+                  onChange={(e) => setRawJSON(e.target.value)}
+                  placeholder="Paste database state JSON string here..."
+                  className="form-control"
+                  style={{ 
+                    flex: 1, 
+                    minHeight: '180px', 
+                    fontFamily: 'var(--mono, monospace)', 
+                    fontSize: '12px', 
+                    resize: 'vertical',
+                    background: 'rgba(0, 0, 0, 0.3)'
+                  }}
+                  required
+                />
+              </div>
+
+              {importStatus.message && (
+                <div style={{ 
+                  padding: '12px', 
+                  borderRadius: '8px', 
+                  fontSize: '13px', 
+                  fontWeight: '500',
+                  textAlign: 'center',
+                  background: importStatus.success ? 'var(--status-safe-bg)' : 'var(--status-critical-bg)',
+                  color: importStatus.success ? 'var(--status-safe)' : 'var(--status-critical)',
+                  border: importStatus.success ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)'
+                }}>
+                  {importStatus.message}
+                </div>
+              )}
+
+              <button type="submit" className="btn btn-primary" style={{ padding: '12px 20px' }}>
+                Apply JSON State
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -14,10 +285,10 @@ const AdminDashboard = () => {
   const studentList = Object.values(students);
   const totalStudents = studentList.length;
   
-  // Calculate average attendance
-  const avgAttendance = Math.round(
-    studentList.reduce((acc, curr) => acc + curr.overallAttendance, 0) / totalStudents
-  );
+  // Calculate average attendance safely to avoid division by zero (NaN)
+  const avgAttendance = totalStudents > 0 
+    ? Math.round(studentList.reduce((acc, curr) => acc + curr.overallAttendance, 0) / totalStudents) 
+    : 0;
 
   // Critical students count based on the dynamic slider threshold!
   const criticalStudents = studentList.filter(stu => stu.overallAttendance < requiredThreshold).length;

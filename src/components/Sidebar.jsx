@@ -12,11 +12,12 @@ import {
   LogOut, 
   GraduationCap, 
   ClipboardCheck, 
-  Shield 
+  Shield,
+  Users
 } from 'lucide-react';
 
 const Sidebar = () => {
-  const { currentUser, logout } = useMockData();
+  const { currentUser, logout, activeSection, setActiveSection, isMobileNavOpen, setIsMobileNavOpen } = useMockData();
   const navigate = useNavigate();
   const [isLightMode, setIsLightMode] = useState(() => {
     return localStorage.getItem('theme') === 'light';
@@ -51,7 +52,7 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isMobileNavOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar-logo">
         <Activity size={32} color="#3B82F6" />
         Attendix
@@ -60,19 +61,19 @@ const Sidebar = () => {
       <nav className="sidebar-nav">
         {currentUser?.role === 'student' && (
           <>
-            <NavLink to="/student" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <NavLink to="/student" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={() => setIsMobileNavOpen(false)}>
               <LayoutDashboard size={20} />
               Dashboard
             </NavLink>
-            <NavLink to="/student/recovery" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <NavLink to="/student/recovery" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={() => setIsMobileNavOpen(false)}>
               <HeartPulse size={20} />
               Recovery Planner
             </NavLink>
-            <NavLink to="/student/rectification" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <NavLink to="/student/rectification" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={() => setIsMobileNavOpen(false)}>
               <FileText size={20} />
               OD & Rectification
             </NavLink>
-            <NavLink to="/student/trends" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <NavLink to="/student/trends" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={() => setIsMobileNavOpen(false)}>
               <TrendingUp size={20} />
               Subject Trends
             </NavLink>
@@ -81,7 +82,7 @@ const Sidebar = () => {
 
         {currentUser?.role === 'faculty' && (
           <>
-            <NavLink to="/faculty" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <NavLink to="/faculty" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`} onClick={() => setIsMobileNavOpen(false)}>
               <LayoutDashboard size={20} />
               Faculty Dashboard
             </NavLink>
@@ -90,10 +91,30 @@ const Sidebar = () => {
 
         {currentUser?.role === 'admin' && (
           <>
-            <NavLink to="/admin" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+            <NavLink 
+              to="/admin" 
+              end 
+              className={({ isActive }) => `nav-item ${isActive && activeSection !== 'admin-data' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveSection('dashboard');
+                setIsMobileNavOpen(false);
+              }}
+            >
               <LayoutDashboard size={20} />
               Admin Dashboard
             </NavLink>
+            <button 
+              onClick={() => {
+                setActiveSection('admin-data');
+                setIsMobileNavOpen(false);
+                navigate('/admin');
+              }} 
+              className={`nav-item ${activeSection === 'admin-data' ? 'active' : ''}`}
+              style={{ background: 'none', border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            >
+              <Users size={20} />
+              Data & User Manager
+            </button>
           </>
         )}
       </nav>
