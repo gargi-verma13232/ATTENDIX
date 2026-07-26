@@ -195,6 +195,18 @@ export const MockDataProvider = ({ children }) => {
       submittedAt: new Date().toISOString().split('T')[0]
     };
     setStudentDocuments(prev => [newDoc, ...prev]);
+    if (base && base.submitRectification) {
+      base.submitRectification({
+        subjectId: doc.subjectId || 'CS101',
+        subjectName: doc.subjectName || 'Data Structures',
+        date: doc.date || new Date().toISOString().split('T')[0],
+        docType: doc.type || 'Medical Certificate',
+        reason: doc.type || 'Leave/OD Application',
+        fileName: doc.fileName || 'document.pdf',
+        size: doc.size || '1.5 MB',
+        status: 'pending'
+      });
+    }
   };
 
   // Timetable Recovery Planner State

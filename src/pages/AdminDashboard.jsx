@@ -117,9 +117,12 @@ const AdminDashboard = () => {
   const totalStudents = studentList.length;
   const avgAttendance = totalStudents > 0
     ? Math.round(studentList.reduce((a, s) => a + s.overallAttendance, 0) / totalStudents) : 0;
-  const criticalStudents = studentList.filter(s => s.overallAttendance < requiredThreshold).length;
+  
+  const safeCount = studentList.filter(s => s.overallAttendance >= 75).length;
+  const warningCount = studentList.filter(s => s.overallAttendance >= 65 && s.overallAttendance < 75).length;
+  const criticalCount = studentList.filter(s => s.overallAttendance < 65).length;
   const totalRequests = (rectificationRequests || []).length;
-  const pendingRequests = (rectificationRequests || []).filter(r => r.status === 'pending').length;
+  const pendingRequests = (rectificationRequests || []).filter(r => r.status === 'pending' || r.status === 'Pending Admin Approval').length;
 
   // ── Quick Add User Handler ────────────────────
   const handleAddUserSubmit = (e) => {
@@ -280,13 +283,25 @@ const AdminDashboard = () => {
   }, [regression]);
 
   // ── Directory filter ──────────────────────────
-  const filteredStudents = studentList.filter(stu => {
-    const q = searchQuery.toLowerCase();
-    const matchSearch = stu.name.toLowerCase().includes(q) || stu.id.toLowerCase().includes(q);
-    const eligible = stu.overallAttendance >= requiredThreshold;
-    const matchStatus = filterStatus === 'all' || (filterStatus === 'eligible' && eligible) || (filterStatus === 'blocked' && !eligible);
-    return matchSearch && matchStatus;
-  });
+  const filteredStudents = useMemo(() => {
+    return studentList.filter(stu => {
+      const q = searchQuery.toLowerCase();
+      const matchSearch =
+        stu.name.toLowerCase().includes(q) ||
+        stu.id.toLowerCase().includes(q) ||
+        (stu.branch && stu.branch.toLowerCase().includes(q));
+      if (filterStatus === 'eligible') {
+        return matchSearch && stu.overallAttendance >= requiredThreshold;
+      }
+      if (filterStatus === 'warning') {
+        return matchSearch && stu.overallAttendance >= 65 && stu.overallAttendance < requiredThreshold;
+      }
+      if (filterStatus === 'blocked') {
+        return matchSearch && stu.overallAttendance < 65;
+      }
+      return matchSearch;
+    });
+  }, [studentList, searchQuery, filterStatus, requiredThreshold]);
 
   const atRiskStudents = studentList.filter(s => s.overallAttendance < 75);
 
@@ -1184,14 +1199,62 @@ const AdminDashboard = () => {
                     <td style={{ padding: '8px' }}><span className="status-badge warning">Manual Override</span></td>
                     <td style={{ padding: '8px', color: 'var(--text-muted)' }}>Camera Glitch Verification</td>
                   </tr>
-                  <tr>
+                  <tr style={{ borderBottom: '1px solid var(--panel-border)' }}>
                     <td style={{ padding: '8px' }}>Prof. S. Radhakrishnan</td>
                     <td style={{ padding: '8px' }}>Ananya Sharma</td>
                     <td style={{ padding: '8px' }}><span className="status-badge safe">OD Approved</span></td>
                     <td style={{ padding: '8px', color: 'var(--text-muted)' }}>Hackathon OD Letter</td>
                   </tr>
+                  <tr>
+                    <td style={{ padding: '8px' }}>Dr. Neha Verma</td>
+                    <td style={{ padding: '8px' }}>Rohan Gupta</td>
+                    <td style={{ padding: '8px' }}><span className="status-badge critical">Proxy Prevented</span></td>
+                    <td style={{ padding: '8px', color: 'var(--text-muted)' }}>Out-of-bound GPS Geofence Flag</td>
+                  </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+
+          {/* Recovery Class Allocation & Faculty Attendance Logging Compliance */}
+          <div className="glass-panel col-span-12">
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+              <TrendingUp className="text-green-500" /> Faculty Attendance Logging Compliance &amp; Recovery Slot Allocations
+            </h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px', border: '1px solid var(--panel-border)' }}>
+                <h4 style={{ margin: '0 0 12px', fontSize: '14px', color: 'var(--accent-primary)' }}>Weekly On-Time Logging Compliance</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {[
+                    { name: 'Dr. R. Mehta', rate: 96, status: 'Compliant' },
+                    { name: 'Prof. S. Radhakrishnan', rate: 88, status: 'Compliant' },
+                    { name: 'Dr. Neha Verma', rate: 72, status: '⚠️ Delayed Warning' },
+                  ].map((fac, i) => (
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '13px' }}>
+                      <span>{fac.name}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontWeight: '700', color: fac.rate >= 85 ? 'var(--status-safe)' : 'var(--status-warning)' }}>{fac.rate}%</span>
+                        <span className={`status-badge ${fac.rate >= 85 ? 'safe' : 'warning'}`} style={{ fontSize: '10px' }}>{fac.status}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: '12px', border: '1px solid var(--panel-border)' }}>
+                <h4 style={{ margin: '0 0 12px', fontSize: '14px', color: 'var(--accent-secondary)' }}>Recovery Class Slot Allocations</h4>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '12px' }}>Allocated makeup slots for postponed lectures across departments.</p>
+                <div style={{ fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px' }}>
+                    <span>CS101 Data Structures (Lab 302)</span>
+                    <strong style={{ color: 'var(--accent-primary)' }}>Wed 04:00 PM</strong>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: '6px' }}>
+                    <span>CS103 Computer Networks (Room 401)</span>
+                    <strong style={{ color: 'var(--accent-primary)' }}>Fri 03:30 PM</strong>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1202,12 +1265,12 @@ const AdminDashboard = () => {
       {/* ────────────────────────────────────────────────────────── */}
       {adminOversightMode === 'student' && (
         <div className="dashboard-grid">
-          {/* Summary Metric Cards */}
+          {/* Exam Eligibility & Detention Risk Summary Metric Cards */}
           {[
             { icon: <Users size={24} />, value: totalStudents, label: 'Total Enrolled Students', bg: 'rgba(59,130,246,0.1)', color: 'var(--accent-primary)' },
-            { icon: <Shield size={24} />, value: Object.keys(dbState.faculty || {}).length || 18, label: 'Active Faculty Members', bg: 'rgba(139,92,246,0.1)', color: 'var(--accent-secondary)' },
-            { icon: <Award size={24} />, value: `${avgAttendance}%`, label: 'Average Attendance Rate', bg: 'rgba(16,185,129,0.1)', color: 'var(--status-safe)' },
-            { icon: <Bell size={24} />, value: '38 Days Left', label: 'End-Sem Exam Countdown', bg: 'rgba(245,158,11,0.1)', color: 'var(--status-warning)' },
+            { icon: <Check size={24} />, value: safeCount, label: 'Safe Zone (≥75%)', bg: 'rgba(16,185,129,0.1)', color: 'var(--status-safe)' },
+            { icon: <AlertTriangle size={24} />, value: warningCount, label: 'Warning Zone (65%–74%)', bg: 'rgba(245,158,11,0.1)', color: 'var(--status-warning)' },
+            { icon: <Ban size={24} />, value: criticalCount, label: 'Detention Risk (<65%)', bg: 'rgba(239,68,68,0.1)', color: 'var(--status-critical)' },
           ].map(m => (
             <motion.div
               key={m.label}
@@ -1220,6 +1283,32 @@ const AdminDashboard = () => {
               <div><h2 style={{ fontSize: '22px', margin: 0 }}>{m.value}</h2><p style={{ fontSize: '12px', margin: 0 }}>{m.label}</p></div>
             </motion.div>
           ))}
+
+          {/* Exam Countdown & Targeted Push Control Bar */}
+          <div className="glass-panel col-span-12" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', background: 'rgba(59, 130, 246, 0.06)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ padding: '10px', background: 'rgba(245,158,11,0.15)', color: 'var(--status-warning)', borderRadius: '10px' }}>
+                <Bell size={20} />
+              </div>
+              <div>
+                <h4 style={{ margin: 0, fontSize: '15px' }}>End-Sem Examination Countdown: 38 Days Remaining</h4>
+                <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--text-muted)' }}>Targeted alerts and low-attendance warnings will be dispatched to students automatically.</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => {
+                  dispatchAdminPushNotice('⚠️ Exam Eligibility Alert: Low Attendance Warning', 'Your current attendance is below the 75% threshold. Please submit OD/Medical certificates or attend recovery classes immediately.', 'student');
+                  alert('Targeted low-attendance warning push notification dispatched to all Detention Risk students!');
+                }}
+                className="btn btn-primary"
+                style={{ fontSize: '12px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Send size={14} /> Dispatch Targeted Push ("Push to Student")
+              </button>
+            </div>
+          </div>
 
           {/* Interactive Document Review Pipeline */}
           <div className="glass-panel col-span-12">
@@ -1290,8 +1379,9 @@ const AdminDashboard = () => {
                 <Filter size={18} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)', pointerEvents: 'none' }} />
                 <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="form-control" style={{ paddingLeft: '38px' }}>
                   <option value="all">All Eligibility Zones</option>
-                  <option value="eligible">Eligible Zone (≥75%)</option>
-                  <option value="blocked">Detention Risk (&lt;75%)</option>
+                  <option value="eligible">Safe Zone (≥75%)</option>
+                  <option value="warning">Warning Zone (65%–74%)</option>
+                  <option value="blocked">Detention Risk (&lt;65%)</option>
                 </select>
               </div>
             </div>

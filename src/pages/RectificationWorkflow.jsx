@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMockData } from '../MockDataContext';
+import DocumentUploadModal from '../components/DocumentUploadModal';
 import {
-  FileText, Upload, Send, Calculator, AlertCircle, ArrowRight,
+  FileText, Upload, Send, Calculator, ArrowRight,
   CheckCircle, FileUp, Shield, Check, X, Eye, Sparkles,
   CheckCircle2, XCircle, Clock
 } from 'lucide-react';
@@ -15,6 +16,7 @@ const RectificationWorkflow = () => {
     rectificationRequests,
     resolveRectification,
     currentUser,
+    submitDocument,
   } = useMockData();
 
   const [simulatorDays, setSimulatorDays] = useState(2);
@@ -26,18 +28,18 @@ const RectificationWorkflow = () => {
   const [docType, setDocType] = useState('Medical Certificate');
   const [reqReason, setReqReason] = useState('');
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadedFileObj, setUploadedFileObj] = useState(null);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [showUploadModal, setShowUploadModal] = useState(false);
 
   // Admin / Faculty Review Pipeline state
   const [selectedDocPreview, setSelectedDocPreview] = useState(null);
-  const [adminNoteInput, setAdminNoteInput] = useState('');
-  const [autoExcuseActive, setAutoExcuseActive] = useState(true);
 
-  const isTeacherOrAdmin = currentUser?.role === 'faculty' || currentUser?.role === 'admin';
-
-  const handleFileMockUpload = () => {
-    setUploadedFile(`${docType.toLowerCase().replace(/\s+/g, '_')}_proof.pdf`);
+  const handleModalSubmitDoc = (docData) => {
+    setUploadedFile(docData.fileName);
+    setUploadedFileObj(docData);
+    setDocType(docData.docType || docType);
   };
 
   const handleFormSubmit = (e) => {
@@ -150,31 +152,50 @@ const RectificationWorkflow = () => {
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)' }}>Upload Proof File (PDF / JPG)</label>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: 'var(--text-muted)' }}>Official Proof Document</label>
               <div
-                onClick={handleFileMockUpload}
+                onClick={() => setShowUploadModal(true)}
                 style={{
-                  border: '2px dashed var(--panel-border)',
-                  borderRadius: '12px',
-                  padding: '24px',
+                  border: uploadedFile ? '1px solid rgba(16, 185, 129, 0.4)' : '1px dashed rgba(59, 130, 246, 0.4)',
+                  borderRadius: '16px',
+                  padding: '20px 16px',
                   textAlign: 'center',
                   cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  backgroundColor: uploadedFile ? 'rgba(59, 130, 246, 0.08)' : 'transparent',
-                  borderColor: uploadedFile ? 'var(--accent-primary)' : 'var(--panel-border)'
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  background: uploadedFile ? 'rgba(16, 185, 129, 0.06)' : 'rgba(59, 130, 246, 0.05)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '12px'
                 }}
               >
                 {uploadedFile ? (
                   <>
-                    <FileUp size={24} color="var(--accent-primary)" style={{ margin: '0 auto 8px' }} />
-                    <p style={{ fontSize: '14px', color: 'var(--accent-primary)', fontWeight: '600', margin: 0 }}>{uploadedFile}</p>
-                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>Click to replace document file</p>
+                    <div style={{ padding: '10px', background: 'rgba(16, 185, 129, 0.15)', borderRadius: '12px', color: 'var(--status-safe)' }}>
+                      <FileUp size={22} />
+                    </div>
+                    <div style={{ textAlign: 'left', flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {uploadedFile}
+                      </p>
+                      <p style={{ fontSize: '11px', color: 'var(--status-safe)', margin: '2px 0 0', fontWeight: '600' }}>
+                        ✓ File Attached — Click to replace or change category
+                      </p>
+                    </div>
                   </>
                 ) : (
                   <>
-                    <Upload size={24} color="var(--text-muted)" style={{ margin: '0 auto 8px' }} />
-                    <p style={{ fontSize: '14px', margin: 0 }}>Click to attach proof document</p>
-                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>PDF, JPG, PNG (Max 5MB)</p>
+                    <div style={{ padding: '10px', background: 'rgba(59, 130, 246, 0.15)', borderRadius: '12px', color: 'var(--accent-primary)' }}>
+                      <Upload size={22} />
+                    </div>
+                    <div style={{ textAlign: 'left' }}>
+                      <p style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>
+                        Click to Open Document Verification Upload Portal
+                      </p>
+                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                        Attach PDF, PNG, JPG proof files with live thumbnail preview
+                      </p>
+                    </div>
                   </>
                 )}
               </div>
@@ -185,6 +206,13 @@ const RectificationWorkflow = () => {
             </button>
           </form>
         </div>
+
+        {/* Document Upload Modal */}
+        <DocumentUploadModal
+          isOpen={showUploadModal}
+          onClose={() => setShowUploadModal(false)}
+          onSubmitDoc={handleModalSubmitDoc}
+        />
 
         {/* 2. ADMIN & FACULTY INSPECTION PIPELINE & AUTO-EXCUSE ENGINE */}
         <div className="glass-panel col-span-6">
@@ -203,8 +231,8 @@ const RectificationWorkflow = () => {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '480px', overflowY: 'auto', paddingRight: '4px' }}>
             {rectificationRequests.map((req) => {
-              const isPending = req.status === 'pending';
-              const isApproved = req.status === 'approved' || req.status === 'Approved';
+              const isPending = req.status === 'pending' || req.status === 'Pending Admin Approval';
+              const isApproved = req.status === 'approved' || req.status === 'Approved' || req.status === 'Approved (Auto-Excused)';
               return (
                 <div key={req.id} style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid var(--panel-border)', borderRadius: '12px', padding: '14px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
@@ -220,7 +248,7 @@ const RectificationWorkflow = () => {
 
                     <span className={`status-badge ${isApproved ? 'safe' : isPending ? 'warning' : 'critical'}`}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        {isApproved ? <><CheckCircle2 size={14} /> Approved (Excused)</> : isPending ? <><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}><Clock size={14} /></motion.div> Pending Review</> : <><XCircle size={14} /> Denied</>}
+                        {isApproved ? <><CheckCircle2 size={14} /> Approved (Auto-Excused)</> : isPending ? <><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}><Clock size={14} /></motion.div> Pending Admin Approval</> : <><XCircle size={14} /> Denied</>}
                       </div>
                     </span>
                   </div>
@@ -248,16 +276,14 @@ const RectificationWorkflow = () => {
                         <button
                           type="button"
                           onClick={() => handleApproveWithAutoExcuse(req.id)}
-                          className="btn"
-                          style={{ background: 'var(--status-safe-bg)', color: 'var(--status-safe)', border: '1px solid var(--status-safe)', padding: '6px 12px', fontSize: '11px' }}
+                          className="btn btn-success btn-sm"
                         >
                           <Check size={13} /> Auto-Excuse &amp; Approve
                         </button>
                         <button
                           type="button"
                           onClick={() => handleRejectWithNote(req.id)}
-                          className="btn"
-                          style={{ background: 'var(--status-critical-bg)', color: 'var(--status-critical)', border: '1px solid var(--status-critical)', padding: '6px 12px', fontSize: '11px' }}
+                          className="btn btn-danger btn-sm"
                         >
                           <X size={13} /> Reject
                         </button>
