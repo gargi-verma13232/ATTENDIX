@@ -158,21 +158,12 @@ p {
   gap: 24px;
 }
 
-.col-span-12 {
-  grid-column: span 12;
-}
-
-.col-span-8 {
-  grid-column: span 8;
-}
-
-.col-span-6 {
-  grid-column: span 6;
-}
-
-.col-span-4 {
-  grid-column: span 4;
-}
+.col-span-12 { grid-column: span 12; }
+.col-span-8 { grid-column: span 8; }
+.col-span-7 { grid-column: span 7; }
+.col-span-6 { grid-column: span 6; }
+.col-span-5 { grid-column: span 5; }
+.col-span-4 { grid-column: span 4; }
 
 /* Status Badges */
 .status-badge {
@@ -1585,4 +1576,54 @@ body.light-theme .role-switcher-container {
   .role-switcher-container {
     display: none;
   }
+}
+
+/* Part 2: Scanner Laser Animation & UI Enhancements */
+.scanner-laser {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--accent-primary), transparent);
+  box-shadow: 0 0 16px var(--accent-primary), 0 0 8px var(--accent-primary);
+  animation: scan 2.4s ease-in-out infinite;
+  z-index: 10;
+}
+
+@keyframes scan {
+  0% {
+    top: 5%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 92%;
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.8;
+  }
+}
+
+.spin-slow {
+  animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.roster-row:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.modal-backdrop {
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }

@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { useMockData } from '../MockDataContext';
 import {
   ClipboardCheck, Users, Clock, Check, X, FileText,
-  AlertTriangle, History, BookOpen, Send, ChevronDown,
-  ToggleLeft, ToggleRight, CheckSquare
+  AlertTriangle, BookOpen, Send, CheckSquare
 } from 'lucide-react';
 
 // ── Course map for display ────────────────────

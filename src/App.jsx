@@ -10,10 +10,10 @@ import StudentDashboard from './pages/StudentDashboard';
 import RecoveryPlanner from './pages/RecoveryPlanner';
 import RectificationWorkflow from './pages/RectificationWorkflow';
 import SubjectTrends from './pages/SubjectTrends';
-import FacultyDashboard from './pages/FacultyDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 
 // Components
+import FacultyDashboard from './components/FacultyDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import './index.css';
@@ -102,4 +102,4 @@ function App() {
   );
 }
 
-export default App;
+export default App;

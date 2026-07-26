@@ -40,7 +40,7 @@ const ScatterTooltip = ({ active, payload }) => {
 
 const AdminDashboard = () => {
   const {
-    dbState, students, faculty, rectificationRequests, activeSection,
+    dbState, students, rectificationRequests, activeSection,
     addStudent, addFaculty, resetDB, importJSONState, bulkDispatchOD,
     campusConfig, updateCampusConfig
   } = useMockData();

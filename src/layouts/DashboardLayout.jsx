@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { useMockData } from '../MockDataContext';
 import { Menu, Sun, Moon, GraduationCap, ClipboardCheck, Shield } from 'lucide-react';
@@ -7,7 +7,6 @@ import { Menu, Sun, Moon, GraduationCap, ClipboardCheck, Shield } from 'lucide-r
 const DashboardLayout = () => {
   const { currentUser, login, isMobileNavOpen, setIsMobileNavOpen, setActiveSection } = useMockData();
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [isLightMode, setIsLightMode] = useState(() => {
     return localStorage.getItem('theme') === 'light';

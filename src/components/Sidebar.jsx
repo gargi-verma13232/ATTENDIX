@@ -13,13 +13,10 @@ import {
   GraduationCap,
   ClipboardCheck,
   Shield,
-  Users,
-  Zap,
-  BarChart2,
   Bell,
-  Database,
   Flame,
 } from 'lucide-react';
+
 
 const Sidebar = () => {
   const {
@@ -95,9 +92,28 @@ const Sidebar = () => {
       </div>
 
       <nav className="sidebar-nav">
+        {/* Portal Switcher for Demo / Testing */}
+        <div style={{ display: 'flex', gap: '4px', marginBottom: '16px', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '10px' }}>
+          <NavLink
+            to="/student"
+            className={({ isActive }) => `btn ${isActive ? 'btn-primary' : ''}`}
+            style={{ flex: 1, padding: '6px 10px', fontSize: '11px', textAlign: 'center', borderRadius: '8px', textDecoration: 'none' }}
+            onClick={closeMobile}
+          >
+            Student
+          </NavLink>
+          <NavLink
+            to="/faculty"
+            className={({ isActive }) => `btn ${isActive ? 'btn-primary' : ''}`}
+            style={{ flex: 1, padding: '6px 10px', fontSize: '11px', textAlign: 'center', borderRadius: '8px', textDecoration: 'none' }}
+            onClick={closeMobile}
+          >
+            Faculty
+          </NavLink>
+        </div>
 
         {/* ── Student Nav ──────────────────────── */}
-        {currentUser?.role === 'student' && (
+        {(!currentUser || currentUser?.role === 'student') && (
           <>
             <NavLink
               to="/student"
@@ -172,36 +188,8 @@ const Sidebar = () => {
             >
               {activeSection === 'dashboard' && <span className="nav-active-bar" />}
               <LayoutDashboard size={20} />
-              Admin Dashboard
+              University Overview
             </button>
-
-            <button
-              style={adminLinkStyle('admin-data')}
-              onClick={() => { setActiveSection('admin-data'); navigate('/admin/data'); closeMobile(); }}
-            >
-              {activeSection === 'admin-data' && <span className="nav-active-bar" />}
-              <Database size={20} />
-              Data &amp; User Manager
-            </button>
-
-            <button
-              style={adminLinkStyle('admin-events')}
-              onClick={() => { setActiveSection('admin-events'); navigate('/admin'); closeMobile(); }}
-            >
-              {activeSection === 'admin-events' && <span className="nav-active-bar" />}
-              <Zap size={20} />
-              OD Event Dispatcher
-            </button>
-
-            <button
-              style={adminLinkStyle('admin-correlation')}
-              onClick={() => { setActiveSection('admin-correlation'); navigate('/admin'); closeMobile(); }}
-            >
-              {activeSection === 'admin-correlation' && <span className="nav-active-bar" />}
-              <BarChart2 size={20} />
-              Academic Analytics
-            </button>
-
             <button
               style={adminLinkStyle('admin-hod')}
               onClick={() => { setActiveSection('admin-hod'); navigate('/admin'); closeMobile(); }}
