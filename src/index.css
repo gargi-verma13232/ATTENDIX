@@ -336,52 +336,159 @@ p {
   color: var(--text-muted);
 }
 
-/* Light Theme Variables & Overrides */
+/* ============================================================
+   Light Theme — Full Variable Override & Component Fixes
+   ============================================================ */
 body.light-theme {
-  --bg-color: #F3F4F6;
-  --panel-bg: rgba(255, 255, 255, 0.8);
-  --panel-border: rgba(0, 0, 0, 0.05);
-  --text-main: #111827;
-  --text-muted: #4B5563;
+  /* Backgrounds */
+  --bg-color: #F8FAFC;
+  --panel-bg: rgba(255, 255, 255, 0.92);
+  --panel-border: #E2E8F0;
 
-  --status-safe-bg: rgba(16, 185, 129, 0.2);
-  --status-warning-bg: rgba(245, 158, 11, 0.2);
-  --status-critical-bg: rgba(239, 68, 68, 0.2);
-  --progress-track: rgba(0, 0, 0, 0.05);
+  /* Typography */
+  --text-main: #0F172A;
+  --text-muted: #475569;
+
+  /* Status — light-mode legible text colors */
+  --status-safe: #065F46;
+  --status-safe-bg: rgba(16, 185, 129, 0.15);
+  --status-warning: #92400E;
+  --status-warning-bg: rgba(245, 158, 11, 0.15);
+  --status-critical: #991B1B;
+  --status-critical-bg: rgba(239, 68, 68, 0.15);
+
+  /* Misc */
+  --progress-track: rgba(0, 0, 0, 0.07);
 }
 
+/* ── App shell ─────────────────────────── */
 body.light-theme .app-container {
-  background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 40%),
-    radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.1), transparent 40%);
+  background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.07), transparent 40%),
+    radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.07), transparent 40%),
+    #F8FAFC;
 }
 
+/* ── Sidebar ───────────────────────────── */
 body.light-theme .sidebar {
-  background-color: rgba(243, 244, 246, 0.8);
+  background-color: rgba(255, 255, 255, 0.95);
+  border-right: 1px solid #E2E8F0;
 }
 
 body.light-theme .nav-item:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: rgba(59, 130, 246, 0.06);
+  color: #0F172A;
 }
 
+body.light-theme .nav-item.active {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: #0F172A;
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.25);
+}
+
+/* ── Glass panels (cards) ──────────────── */
+body.light-theme .glass-panel {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+body.light-theme .glass-panel:hover {
+  box-shadow: 0 10px 20px -4px rgba(0, 0, 0, 0.08), 0 4px 8px -2px rgba(0, 0, 0, 0.04);
+}
+
+/* ── Buttons ───────────────────────────── */
 body.light-theme .btn-secondary {
-  background: rgba(0, 0, 0, 0.05);
-  border: 1px solid var(--panel-border);
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  color: #0F172A;
 }
 
 body.light-theme .btn-secondary:hover {
-  background: rgba(0, 0, 0, 0.1);
+  background: #E2E8F0;
+  border-color: #94A3B8;
 }
 
+/* ── Form controls (inputs, selects, textareas) ── */
+body.light-theme .form-control {
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  color: #0F172A;
+}
+
+body.light-theme .form-control:focus {
+  background: #FFFFFF;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+body.light-theme select.form-control,
+body.light-theme select {
+  background-color: #FFFFFF;
+  color: #0F172A;
+}
+
+body.light-theme textarea.form-control,
+body.light-theme textarea {
+  background-color: #FFFFFF;
+  color: #0F172A;
+}
+
+body.light-theme input[type="text"],
+body.light-theme input[type="date"],
+body.light-theme input[type="number"],
+body.light-theme input[type="email"],
+body.light-theme input[type="password"] {
+  background-color: #FFFFFF;
+  color: #0F172A;
+  border-color: #CBD5E1;
+}
+
+/* Login page input wrapper */
+body.light-theme .input-wrapper input {
+  background: #FFFFFF;
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+body.light-theme .input-wrapper input:focus {
+  background: #FFFFFF;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+/* ── Panel insets ──────────────────────── */
+body.light-theme .panel-inset {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+}
+
+/* ── Progress track ────────────────────── */
+body.light-theme .progress-container {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* ── Circular progress inner circle ───── */
 body.light-theme .circular-progress::before {
-  background: var(--bg-color);
+  background: #F8FAFC;
 }
 
+/* ── Scrollbars ────────────────────────── */
 body.light-theme ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
+  background: #CBD5E1;
 }
 
 body.light-theme ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.2);
+  background: #94A3B8;
+}
+
+/* ── Top navbar (mobile) ───────────────── */
+body.light-theme .top-navbar {
+  background-color: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid #E2E8F0;
+}
+
+body.light-theme .hamburger-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 /* Login Page */
@@ -692,10 +799,7 @@ body.light-theme .panel-inset {
   gap: 16px;
 }
 
-body.light-theme .top-navbar {
-  background-color: rgba(243, 244, 246, 0.9);
-  border-bottom: 1px solid var(--panel-border);
-}
+/* top-navbar light override moved to the main light-theme block above */
 
 .hamburger-btn {
   background: none;
@@ -992,6 +1096,11 @@ select {
   color: var(--text-muted);
 }
 
+body.light-theme .tag-scheduled {
+  background: #F1F5F9;
+  color: #475569;
+}
+
 .feed-action {
   color: var(--text-muted);
   display: flex;
@@ -1036,7 +1145,9 @@ select {
 }
 
 body.light-theme .task-modal {
-  background: rgba(255, 255, 255, 0.98);
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.12);
 }
 
 .task-modal-header {
@@ -1266,225 +1377,115 @@ body.light-theme .roster-header {
   border-radius: 0 4px 4px 0;
 }
 
-/* ── Light theme overrides for new components */
+/* ── Light theme overrides for new components ── */
 body.light-theme .feed-item {
-  background: rgba(0, 0, 0, 0.02);
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+}
+
+body.light-theme .feed-item:hover {
+  background: #F1F5F9;
 }
 
 body.light-theme .feed-absent {
-  background: rgba(239, 68, 68, 0.03);
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.25);
 }
 
-body.light-theme .roster-row:hover {
-  background: rgba(0, 0, 0, 0.02);
+body.light-theme .feed-absent:hover {
+  background: rgba(239, 68, 68, 0.08);
 }
 
-body.light-theme .hod-alert-row {
-  background: rgba(239, 68, 68, 0.02);
+body.light-theme .feed-course {
+  color: #0F172A;
 }
 
-body.light-theme .streak-sidebar-widget {
-  background: rgba(245, 158, 11, 0.06);
-}
-
-/* ── Mobile responsive additions ─────────── */
-@media (max-width: 768px) {
-
-  .roster-header,
-  .roster-row {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
-  .hod-alert-row {
-    grid-template-columns: 1fr;
-  }
-
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
-  border: 1px solid var(--panel-border);
+body.light-theme .feed-time {
+  color: #475569;
 }
 
 body.light-theme .task-detail-block p {
-  background: rgba(0, 0, 0, 0.03);
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+  color: #0F172A;
 }
 
-.task-quiz-alert {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background: var(--status-warning-bg);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  color: var(--status-warning);
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
+body.light-theme .task-modal-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #0F172A;
 }
 
-/* ── Subject Trajectory Cards ────────────── */
-.subject-trajectory-card {
-  padding: 16px;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.subject-trajectory-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-}
-
-/* ── Faculty Session Logger ──────────────── */
-.faculty-logger {
-  padding: 8px 0;
-}
-
-.field-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-}
-
-.roster-table {
-  border: 1px solid var(--panel-border);
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.roster-header {
-  display: grid;
-  grid-template-columns: 1fr 180px 260px;
-  padding: 10px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid var(--panel-border);
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-muted);
-}
-
-.roster-row {
-  display: grid;
-  grid-template-columns: 1fr 180px 260px;
-  align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--panel-border);
-  font-size: 14px;
-  transition: background 0.15s;
-}
-
-.roster-row:last-child {
-  border-bottom: none;
-}
-
-.roster-row:hover {
-  background: rgba(255, 255, 255, 0.02);
+/* Roster / Table */
+body.light-theme .roster-table {
+  border-color: #E2E8F0;
 }
 
 body.light-theme .roster-header {
-  background: rgba(0, 0, 0, 0.03);
+  background: #F8FAFC;
+  border-bottom-color: #E2E8F0;
+  color: #64748B;
 }
 
-/* ── Alert Banners ───────────────────────── */
-.alert-success {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  border-radius: 10px;
-  background: var(--status-safe-bg);
-  color: var(--status-safe);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.alert-error {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  border-radius: 10px;
-  background: var(--status-critical-bg);
-  color: var(--status-critical);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-/* ── HOD Alert System ────────────────────── */
-.hod-alert-row {
-  display: grid;
-  grid-template-columns: 1fr 240px;
-  align-items: center;
-  gap: 24px;
-  padding: 16px 20px;
-  border-radius: 14px;
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  background: rgba(239, 68, 68, 0.03);
-  transition: transform 0.2s ease;
-}
-
-.hod-alert-row:hover {
-  transform: translateX(3px);
-}
-
-.hod-alert-info h4 {
-  font-size: 15px;
-  margin-bottom: 4px;
-}
-
-.hod-alert-progress .progress-container {
-  position: relative;
-  margin-top: 6px;
-}
-
-/* ── Sidebar Streak Widget ───────────────── */
-.streak-sidebar-widget {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  margin-top: 8px;
-  border-radius: 12px;
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.2);
-}
-
-/* ── Nav Active Bar (Admin buttons) ─────── */
-.nav-active-bar {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: var(--accent-gradient);
-  border-radius: 0 4px 4px 0;
-}
-
-/* ── Light theme overrides for new components */
-body.light-theme .feed-item {
-  background: rgba(0, 0, 0, 0.02);
-}
-
-body.light-theme .feed-absent {
-  background: rgba(239, 68, 68, 0.03);
+body.light-theme .roster-row {
+  border-bottom-color: #E2E8F0;
+  color: #0F172A;
 }
 
 body.light-theme .roster-row:hover {
-  background: rgba(0, 0, 0, 0.02);
+  background: #F1F5F9;
+  transform: translateX(2px);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
 }
 
+/* HOD Alerts */
 body.light-theme .hod-alert-row {
-  background: rgba(239, 68, 68, 0.02);
+  background: rgba(239, 68, 68, 0.04);
+  border-color: rgba(239, 68, 68, 0.2);
 }
 
+/* Streak widget */
 body.light-theme .streak-sidebar-widget {
-  background: rgba(245, 158, 11, 0.06);
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+/* Quick login items */
+body.light-theme .quick-login-item {
+  background: #F8FAFC;
+  border-color: #E2E8F0;
+}
+
+body.light-theme .quick-login-item:hover {
+  background: rgba(59, 130, 246, 0.06);
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+/* Tables inline (AdminDashboard student directory) */
+body.light-theme table {
+  color: #0F172A;
+}
+
+body.light-theme table th {
+  color: #475569;
+}
+
+body.light-theme table td {
+  color: #0F172A;
+}
+
+body.light-theme table tr:hover {
+  background: #F8FAFC;
+}
+
+/* Role-switcher container in navbar */
+body.light-theme .role-switcher-container {
+  background: #F1F5F9;
+  border-color: #CBD5E1;
+}
+
+/* Subject trajectory card hover shadow */
+body.light-theme .subject-trajectory-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 /* ── Mobile responsive additions ─────────── */
