@@ -42,7 +42,10 @@ const AdminDashboard = () => {
   const {
     dbState, students, rectificationRequests, activeSection,
     addStudent, addFaculty, resetDB, importJSONState, bulkDispatchOD,
-    campusConfig, updateCampusConfig
+    campusConfig, updateCampusConfig,
+    adminTargetAudience, setAdminTargetAudience,
+    adminPreviewRole, setAdminPreviewRole,
+    dispatchAdminPushNotice,
   } = useMockData();
 
   const [requiredThreshold, setRequiredThreshold] = useState(75);
@@ -544,8 +547,22 @@ const AdminDashboard = () => {
                 </div>
               </div>
               <div className="input-group">
-                <label>Student IDs (comma-separated)</label>
-                <textarea value={odStudentIds} onChange={e => setOdStudentIds(e.target.value)} placeholder="STU-2024-001, STU-2024-002, ..." className="form-control" rows={3} style={{ resize: 'vertical' }} required />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                  <label style={{ margin: 0 }}>Student IDs (comma-separated or CSV upload)</label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const csvSample = "STU-2024-001, STU-2024-002";
+                      setOdStudentIds(csvSample);
+                      alert("Simulated CSV File Uploaded! Extracted Student IDs: " + csvSample);
+                    }}
+                    className="btn btn-secondary"
+                    style={{ padding: '4px 10px', fontSize: '11px' }}
+                  >
+                    📁 Upload Student CSV File
+                  </button>
+                </div>
+                <textarea value={odStudentIds} onChange={e => setOdStudentIds(e.target.value)} placeholder="STU-2024-001, STU-2024-002, or upload CSV file..." className="form-control" rows={3} style={{ resize: 'vertical' }} required />
               </div>
               <div>
                 <label className="field-label" style={{ marginBottom: '12px', display: 'block' }}>Policy Mode</label>
@@ -793,12 +810,67 @@ const AdminDashboard = () => {
 
   return (
     <div className="dashboard-content">
-      <div className="page-header">
-        <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Shield color="var(--accent-primary)" /> Administrator Overview
-        </h1>
-        <p className="page-subtitle">College-wide statistics, global eligibility thresholds, and student directory.</p>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+        <div>
+          <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Shield color="var(--accent-primary)" /> Administrator Overview
+          </h1>
+          <p className="page-subtitle">College-wide statistics, global eligibility thresholds, and student directory.</p>
+        </div>
+
+        {/* ADMIN TARGET VIEW & PUSH CONTROL PANEL */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(0,0,0,0.3)', padding: '8px 14px', borderRadius: '12px', border: '1px solid var(--panel-border)' }}>
+          <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)' }}>
+            Push Target:
+          </span>
+          <button
+            onClick={() => setAdminTargetAudience('students')}
+            className={`btn ${adminTargetAudience === 'students' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: '6px 12px', fontSize: '12px' }}
+          >
+            🎓 Students
+          </button>
+          <button
+            onClick={() => setAdminTargetAudience('teachers')}
+            className={`btn ${adminTargetAudience === 'teachers' ? 'btn-primary' : 'btn-secondary'}`}
+            style={{ padding: '6px 12px', fontSize: '12px' }}
+          >
+            📋 Teachers
+          </button>
+          <div style={{ width: '1px', height: '20px', background: 'var(--panel-border)', margin: '0 4px' }} />
+          <button
+            onClick={() => setAdminPreviewRole(adminPreviewRole === 'student' ? 'none' : 'student')}
+            className="btn btn-secondary"
+            style={{ padding: '6px 12px', fontSize: '12px', color: adminPreviewRole === 'student' ? 'var(--accent-primary)' : 'var(--text-main)' }}
+          >
+            👁️ Preview Student View
+          </button>
+          <button
+            onClick={() => setAdminPreviewRole(adminPreviewRole === 'faculty' ? 'none' : 'faculty')}
+            className="btn btn-secondary"
+            style={{ padding: '6px 12px', fontSize: '12px', color: adminPreviewRole === 'faculty' ? 'var(--accent-secondary)' : 'var(--text-main)' }}
+          >
+            👁️ Preview Teacher View
+          </button>
+        </div>
       </div>
+
+      {/* ADMIN PREVIEW MODAL / BANNER IF ACTIVE */}
+      {adminPreviewRole !== 'none' && (
+        <div style={{ background: 'rgba(139, 92, 246, 0.15)', border: '1px solid var(--accent-secondary)', padding: '16px 20px', borderRadius: '14px', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <span className="status-badge safe" style={{ background: 'var(--accent-secondary)', color: '#fff' }}>
+              👁️ Admin Inspection Preview: View as {adminPreviewRole === 'student' ? 'Student' : 'Teacher'}
+            </span>
+            <button onClick={() => setAdminPreviewRole('none')} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: '700' }}>
+              ✖ Close Preview
+            </button>
+          </div>
+          <p style={{ fontSize: '13px', margin: 0, color: 'var(--text-main)' }}>
+            This live preview shows what the pushed announcements, OD waivers, and timetable recovery slots will look like to {adminPreviewRole === 'student' ? 'enrolled students' : 'faculty members'}.
+          </p>
+        </div>
+      )}
 
       <div className="dashboard-grid">
         {[

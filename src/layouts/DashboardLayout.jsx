@@ -60,41 +60,31 @@ const DashboardLayout = () => {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span className="top-navbar-title">{getPageTitle()}</span>
+          {currentUser && (
+            <span className="status-badge safe" style={{ fontSize: '11px', textTransform: 'capitalize', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              {currentUser.role === 'student' && <GraduationCap size={13} />}
+              {currentUser.role === 'faculty' && <ClipboardCheck size={13} />}
+              {currentUser.role === 'admin' && <Shield size={13} />}
+              {currentUser.role}
+            </span>
+          )}
         </div>
 
-        {/* Role Switcher */}
-        <div className="role-switcher-container">
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {currentUser && (
+            <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)' }}>
+              {currentUser.name}
+            </span>
+          )}
+          {/* Theme Toggle */}
           <button
-            className={`role-switch-btn ${currentUser?.role === 'student' ? 'active' : ''}`}
-            onClick={() => handleRoleSwitch('student')}
-            title="Switch to Student View"
+            onClick={() => setIsLightMode(!isLightMode)}
+            className="top-theme-toggle"
+            title="Toggle Light/Dark Theme"
           >
-            <GraduationCap size={14} /> Student View
-          </button>
-          <button
-            className={`role-switch-btn ${currentUser?.role === 'faculty' ? 'active' : ''}`}
-            onClick={() => handleRoleSwitch('faculty')}
-            title="Switch to Faculty View"
-          >
-            <ClipboardCheck size={14} /> Faculty View
-          </button>
-          <button
-            className={`role-switch-btn ${currentUser?.role === 'admin' ? 'active' : ''}`}
-            onClick={() => handleRoleSwitch('admin')}
-            title="Switch to Admin Portal"
-          >
-            <Shield size={14} /> Admin Portal
+            {isLightMode ? <Moon size={16} /> : <Sun size={16} />}
           </button>
         </div>
-
-        {/* Theme Toggle */}
-        <button
-          onClick={() => setIsLightMode(!isLightMode)}
-          className="top-theme-toggle"
-          title="Toggle Light/Dark Theme"
-        >
-          {isLightMode ? <Moon size={16} /> : <Sun size={16} />}
-        </button>
       </header>
 
       {/* Backdrop overlay for mobile drawer */}

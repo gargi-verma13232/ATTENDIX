@@ -40,6 +40,8 @@ const StudentDashboard = () => {
     studentSessions,
     getSessionNotes,
     logStudentAttendanceScan,
+    notifications,
+    recoveryClasses,
   } = useMockData();
 
   // Exam Eligibility calculation
@@ -161,6 +163,39 @@ const StudentDashboard = () => {
         </button>
       </div>
 
+      {/* PUSHED ALERTS & NOTIFICATIONS BANNER */}
+      {notifications && notifications.length > 0 && (
+        <div style={{ marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {notifications.slice(0, 2).map((notif) => (
+            <div
+              key={notif.id}
+              style={{
+                background: 'rgba(59, 130, 246, 0.12)',
+                border: '1px solid rgba(59, 130, 246, 0.3)',
+                padding: '12px 18px',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '18px' }}>📢</span>
+                <div>
+                  <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--accent-primary)' }}>
+                    {notif.title}
+                  </span>
+                  <p style={{ fontSize: '12px', color: 'var(--text-main)', margin: '2px 0 0' }}>
+                    {notif.message}
+                  </p>
+                </div>
+              </div>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{notif.date}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="dashboard-grid">
         {/* Main Attendance Overview */}
         <div className="glass-panel col-span-8" style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
@@ -221,26 +256,71 @@ const StudentDashboard = () => {
           )}
         </div>
 
-        {/* Subjects Breakdown Mini */}
-        <div className="col-span-12">
-          <h3 style={{ marginBottom: '16px' }}>Subject Breakdown</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-            {subjects.map((sub) => (
-              <div key={sub.id} className="glass-panel" style={{ padding: '16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <span style={{ fontWeight: '500' }}>{sub.name}</span>
-                  <span style={{ color: sub.attendance >= 75 ? 'var(--status-safe)' : 'var(--status-critical)', fontWeight: '600' }}>
-                    {sub.attendance}%
-                  </span>
+        {/* INTERACTIVE ATTENDANCE CALENDAR & PROGRESS TRACKING */}
+        <div className="glass-panel col-span-12" style={{ marginTop: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+            <div>
+              <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}>
+                <Calendar className="text-blue-500" /> Attendance Calendar &amp; Class History
+              </h2>
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
+                Visual daily class history with live status indicators and recovery session tracking.
+              </p>
+            </div>
+
+            {/* Legend */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.3)', padding: '8px 14px', borderRadius: '10px', fontSize: '12px' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>🟢 Attended</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>🔴 Missed</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>🟡 Recovered/OD</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>🔵 Upcoming</span>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
+            {[
+              { date: '2026-07-26', day: 'Sun', title: 'Data Structures', time: '09:00 AM', status: 'attended', icon: '🟢' },
+              { date: '2026-07-25', day: 'Sat', title: 'Database Systems', time: '11:00 AM', status: 'missed', icon: '🔴' },
+              { date: '2026-07-24', day: 'Fri', title: 'Operating Systems', time: '02:00 PM', status: 'recovered', icon: '🟡' },
+              { date: '2026-07-23', day: 'Thu', title: 'Communication', time: '10:00 AM', status: 'attended', icon: '🟢' },
+              { date: '2026-07-22', day: 'Wed', title: 'Data Structures', time: '09:00 AM', status: 'attended', icon: '🟢' },
+              { date: '2026-07-27', day: 'Mon', title: 'Database Systems', time: '11:00 AM', status: 'upcoming', icon: '🔵' },
+              { date: '2026-07-28', day: 'Tue', title: 'Operating Systems', time: '02:00 PM', status: 'upcoming', icon: '🔵' },
+            ].map((dayItem, i) => {
+              const bgMap = {
+                attended: 'rgba(16, 185, 129, 0.1)',
+                missed: 'rgba(239, 68, 68, 0.1)',
+                recovered: 'rgba(245, 158, 11, 0.1)',
+                upcoming: 'rgba(59, 130, 246, 0.1)',
+              };
+              const borderMap = {
+                attended: 'rgba(16, 185, 129, 0.3)',
+                missed: 'rgba(239, 68, 68, 0.3)',
+                recovered: 'rgba(245, 158, 11, 0.3)',
+                upcoming: 'rgba(59, 130, 246, 0.3)',
+              };
+              return (
+                <div
+                  key={i}
+                  style={{
+                    background: bgMap[dayItem.status],
+                    border: `1px solid ${borderMap[dayItem.status]}`,
+                    borderRadius: '12px',
+                    padding: '12px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: '700' }}>
+                    {dayItem.day} · {dayItem.date.split('-').slice(1).join('/')}
+                  </div>
+                  <div style={{ fontSize: '20px', margin: '6px 0 2px' }}>{dayItem.icon}</div>
+                  <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {dayItem.title}
+                  </div>
+                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>{dayItem.time}</div>
                 </div>
-                <div className="progress-container">
-                  <div
-                    className={`progress-bar ${sub.attendance >= 75 ? 'progress-safe' : 'progress-critical'}`}
-                    style={{ width: `${sub.attendance}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

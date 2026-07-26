@@ -92,26 +92,6 @@ const Sidebar = () => {
       </div>
 
       <nav className="sidebar-nav">
-        {/* Portal Switcher for Demo / Testing */}
-        <div style={{ display: 'flex', gap: '4px', marginBottom: '16px', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '10px' }}>
-          <NavLink
-            to="/student"
-            className={({ isActive }) => `btn ${isActive ? 'btn-primary' : ''}`}
-            style={{ flex: 1, padding: '6px 10px', fontSize: '11px', textAlign: 'center', borderRadius: '8px', textDecoration: 'none' }}
-            onClick={closeMobile}
-          >
-            Student
-          </NavLink>
-          <NavLink
-            to="/faculty"
-            className={({ isActive }) => `btn ${isActive ? 'btn-primary' : ''}`}
-            style={{ flex: 1, padding: '6px 10px', fontSize: '11px', textAlign: 'center', borderRadius: '8px', textDecoration: 'none' }}
-            onClick={closeMobile}
-          >
-            Faculty
-          </NavLink>
-        </div>
-
         {/* ── Student Nav ──────────────────────── */}
         {(!currentUser || currentUser?.role === 'student') && (
           <>
@@ -138,7 +118,7 @@ const Sidebar = () => {
               onClick={closeMobile}
             >
               <FileText size={20} />
-              OD &amp; Rectification
+              OD &amp; Documents
             </NavLink>
             <NavLink
               to="/student/trends"
@@ -156,7 +136,7 @@ const Sidebar = () => {
                 <div>
                   <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>Day Streak</p>
                   <p style={{ fontSize: '18px', fontWeight: '800', color: 'var(--status-warning)', margin: 0 }}>
-                    🔥 {student.streak}
+                    🔥 {student.streak} Days
                   </p>
                 </div>
               </div>
@@ -191,12 +171,36 @@ const Sidebar = () => {
               University Overview
             </button>
             <button
+              style={adminLinkStyle('admin-events')}
+              onClick={() => { setActiveSection('admin-events'); navigate('/admin'); closeMobile(); }}
+            >
+              {activeSection === 'admin-events' && <span className="nav-active-bar" />}
+              <Shield size={20} />
+              Mass OD Portal
+            </button>
+            <button
+              style={adminLinkStyle('admin-correlation')}
+              onClick={() => { setActiveSection('admin-correlation'); navigate('/admin'); closeMobile(); }}
+            >
+              {activeSection === 'admin-correlation' && <span className="nav-active-bar" />}
+              <TrendingUp size={20} />
+              Academic Scatter Plot
+            </button>
+            <button
               style={adminLinkStyle('admin-hod')}
               onClick={() => { setActiveSection('admin-hod'); navigate('/admin'); closeMobile(); }}
             >
               {activeSection === 'admin-hod' && <span className="nav-active-bar" />}
               <Bell size={20} />
-              HOD Alert System
+              HOD Risk Alerts
+            </button>
+            <button
+              style={adminLinkStyle('admin-data')}
+              onClick={() => { setActiveSection('admin-data'); navigate('/admin'); closeMobile(); }}
+            >
+              {activeSection === 'admin-data' && <span className="nav-active-bar" />}
+              <FileText size={20} />
+              Data &amp; GPS Config
             </button>
           </>
         )}

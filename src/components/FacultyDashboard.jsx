@@ -43,6 +43,10 @@ const FacultyDashboard = () => {
     updateRequestStatus,
     jumpToClassRegister,
     notices,
+    liveScanCount,
+    scannedStudentsList,
+    cancelClassSession,
+    createRecoveryClass,
   } = useMockData();
 
   // QR Modal state
@@ -697,6 +701,47 @@ const FacultyDashboard = () => {
               {qrToken}
             </div>
 
+            {/* REAL-TIME LIVE STUDENT SCAN COUNTER */}
+            <div
+              style={{
+                background: 'rgba(16, 185, 129, 0.1)',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+                borderRadius: '12px',
+                padding: '12px 16px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div>
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: '600' }}>
+                  Live Verified Student Scans
+                </span>
+                <div style={{ fontSize: '22px', fontWeight: '800', color: 'var(--status-safe)', margin: 0 }}>
+                  ⚡ {liveScanCount} Active Scans
+                </div>
+              </div>
+              <span className="status-badge safe" style={{ fontSize: '11px', animation: 'pulse 2s infinite' }}>
+                ● Live Sync Active
+              </span>
+            </div>
+
+            {/* Recent Live Scans Feed */}
+            {scannedStudentsList && scannedStudentsList.length > 0 && (
+              <div style={{ marginBottom: '16px', textAlign: 'left', background: 'rgba(0,0,0,0.3)', padding: '10px 14px', borderRadius: '10px', maxHeight: '100px', overflowY: 'auto' }}>
+                <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                  RECENT VERIFIED SCANS
+                </div>
+                {scannedStudentsList.slice(0, 3).map((s, idx) => (
+                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', padding: '3px 0', borderBottom: idx < 2 ? '1px dashed rgba(255,255,255,0.05)' : 'none' }}>
+                    <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>✔ {s.name} ({s.id})</span>
+                    <span style={{ color: 'var(--status-safe)', fontSize: '11px' }}>{s.time}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* COUNTDOWN TIMER BAR (0 - 10s) */}
             <div style={{ marginBottom: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)' }}>
@@ -719,7 +764,7 @@ const FacultyDashboard = () => {
             </div>
 
             <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              GPS coordinate lock: {campusConfig.latitude.toFixed(4)}, {campusConfig.longitude.toFixed(4)} ({campusConfig.radiusMeters}m radius)
+              GPS coordinate lock: {campusConfig.lat ? campusConfig.lat.toFixed(4) : (campusConfig.latitude ? campusConfig.latitude.toFixed(4) : '28.4595')}, {campusConfig.lng ? campusConfig.lng.toFixed(4) : (campusConfig.longitude ? campusConfig.longitude.toFixed(4) : '77.0266')} ({campusConfig.radiusMeters || 200}m radius)
             </p>
           </div>
         </div>

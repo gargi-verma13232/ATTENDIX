@@ -146,12 +146,118 @@ export const MockDataProvider = ({ children }) => {
     setSelectedSlot(slotId);
   };
 
+  // Live QR session scan counter
+  const [liveScanCount, setLiveScanCount] = useState(14);
+  const [scannedStudentsList, setScannedStudentsList] = useState([
+    { id: 'STU-2024-002', name: 'Ananya Sharma', time: '09:02 AM', method: 'Biometric + GPS' },
+    { id: 'STU-2024-004', name: 'Rohan Gupta', time: '09:04 AM', method: 'Biometric + GPS' },
+  ]);
+
+  // Timetable Recovery Planner State
+  const [cancelledClasses, setCancelledClasses] = useState([
+    {
+      id: 'canc-001',
+      courseId: 'CS101',
+      courseName: 'CS101 - Data Structures',
+      date: '2026-07-24',
+      slotId: '09:00',
+      reason: 'Departmental Faculty Workshop',
+      status: 'Cancelled',
+      missedHours: 1.5,
+    },
+  ]);
+
+  const [recoveryClasses, setRecoveryClasses] = useState([
+    {
+      id: 'rec-001',
+      courseId: 'CS101',
+      courseName: 'CS101 - Data Structures',
+      originalDate: '2026-07-24',
+      scheduledDate: '2026-07-29',
+      dayOfWeek: 'Wednesday',
+      timeSlot: '04:00 PM - 05:30 PM',
+      room: 'Lab 302',
+      faculty: 'Dr. R. Mehta',
+      status: 'Scheduled',
+    },
+  ]);
+
+  // Alert Notifications for Students
+  const [notifications, setNotifications] = useState([
+    {
+      id: 'notif-001',
+      title: '📢 Recovery Class Scheduled',
+      message: 'CS101 Data Structures recovery session set for Wednesday 04:00 PM in Lab 302.',
+      date: '2026-07-26',
+      unread: true,
+      targetRole: 'student',
+    },
+    {
+      id: 'notif-002',
+      title: '✅ OD Request Approved',
+      message: 'Your On-Duty request for Inter-University Hackathon has been approved.',
+      date: '2026-07-25',
+      unread: false,
+      targetRole: 'student',
+    },
+  ]);
+
+  // Admin Target View & Push Preview Control (Admin-only feature)
+  const [adminTargetAudience, setAdminTargetAudience] = useState('students'); // 'students' | 'teachers'
+  const [adminPreviewRole, setAdminPreviewRole] = useState('none'); // 'none' | 'student' | 'faculty'
+
+  const cancelClassSession = (courseId, courseName, date, slotId, reason) => {
+    const newCancel = {
+      id: `canc-${Date.now()}`,
+      courseId,
+      courseName,
+      date,
+      slotId,
+      reason,
+      status: 'Cancelled',
+      missedHours: 1.5,
+    };
+    setCancelledClasses(prev => [newCancel, ...prev]);
+  };
+
+  const createRecoveryClass = (recoveryData) => {
+    const newRecovery = {
+      id: `rec-${Date.now()}`,
+      ...recoveryData,
+      status: 'Scheduled',
+    };
+    setRecoveryClasses(prev => [newRecovery, ...prev]);
+
+    // Automatically dispatch alert notification to students
+    const alertMsg = {
+      id: `notif-${Date.now()}`,
+      title: '📢 New Recovery Class Scheduled',
+      message: `${recoveryData.courseName} recovery session scheduled on ${recoveryData.dayOfWeek} (${recoveryData.scheduledDate}) at ${recoveryData.timeSlot} in ${recoveryData.room}.`,
+      date: new Date().toISOString().split('T')[0],
+      unread: true,
+      targetRole: 'student',
+    };
+    setNotifications(prev => [alertMsg, ...prev]);
+  };
+
+  const dispatchAdminPushNotice = (title, message, targetRole) => {
+    const newPush = {
+      id: `push-${Date.now()}`,
+      title: `📢 ${title}`,
+      message,
+      date: new Date().toISOString().split('T')[0],
+      unread: true,
+      targetRole: targetRole || adminTargetAudience,
+    };
+    setNotifications(prev => [newPush, ...prev]);
+  };
+
   const logStudentAttendanceScan = (courseId, date, slotId) => {
     const key = `${courseId}_${date}_${slotId}`;
     setSessionRosters(prev => {
       const current = prev[key] || defaultRoster;
       const updated = current.map(student => {
-        if (student.id === 'stu-001') {
+        if (student.id === 'stu-001' || student.id === 'STU-2024-001') {
           return {
             ...student,
             status: 'present',
@@ -171,6 +277,18 @@ export const MockDataProvider = ({ children }) => {
         return sess;
       })
     );
+
+    // Increment live scan counter and log student in active QR session
+    setLiveScanCount(prev => prev + 1);
+    setScannedStudentsList(prev => [
+      {
+        id: 'STU-2024-001',
+        name: 'Alex Johnson',
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        method: 'Biometric + GPS QR',
+      },
+      ...prev,
+    ]);
   };
 
   const enhancedValue = {
@@ -194,6 +312,18 @@ export const MockDataProvider = ({ children }) => {
     notices,
     studentSessions,
     logStudentAttendanceScan,
+    liveScanCount,
+    scannedStudentsList,
+    cancelledClasses,
+    recoveryClasses,
+    cancelClassSession,
+    createRecoveryClass,
+    notifications,
+    dispatchAdminPushNotice,
+    adminTargetAudience,
+    setAdminTargetAudience,
+    adminPreviewRole,
+    setAdminPreviewRole,
   };
 
   return (
