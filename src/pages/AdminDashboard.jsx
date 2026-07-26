@@ -46,7 +46,7 @@ const AdminDashboard = () => {
     campusConfig, updateCampusConfig,
     adminTargetAudience, setAdminTargetAudience,
     adminPreviewRole, setAdminPreviewRole,
-    dispatchAdminPushNotice,
+    dispatchAdminPushNotice, studentDocuments,
   } = useMockData();
 
   const [requiredThreshold, setRequiredThreshold] = useState(75);
@@ -80,6 +80,18 @@ const AdminDashboard = () => {
   const [odStudentIds, setOdStudentIds] = useState('');
   const [odPolicy, setOdPolicy] = useState('Auto-Approve');
   const [odStatus, setOdStatus] = useState({ success: null, message: '' });
+
+  // Top-Level Oversight Mode Toggle
+  const [adminOversightMode, setAdminOversightMode] = useState('student'); // 'student' | 'faculty'
+
+  // Interactive Document Side-by-Side Review Modal State
+  const [selectedReviewDoc, setSelectedReviewDoc] = useState(null);
+  const [rejectionNoteInput, setRejectionNoteInput] = useState('');
+  const [docReviewStatus, setDocReviewStatus] = useState('');
+
+  // OD Roster Push to Teacher state
+  const [targetTeacherRoster, setTargetTeacherRoster] = useState('Dr. R. Mehta');
+  const [pushRosterSuccessMsg, setPushRosterSuccessMsg] = useState('');
 
   // Communication Hub
   const [commTargetType, setCommTargetType] = useState('student');
@@ -949,18 +961,31 @@ const AdminDashboard = () => {
   }
 
   // ══════════════════════════════════════════════
-  // Default: Admin Overview
+  // Default: Admin Overview (Student & Faculty Views)
   // ══════════════════════════════════════════════
   const handleSaveConfig = () => { setIsSaved(true); setTimeout(() => setIsSaved(false), 2000); };
 
+  const pendingStudentDocs = [
+    ...(studentDocuments || []),
+    ...(rectificationRequests || []).map(r => ({
+      id: r.id,
+      fileName: r.proofName || r.fileName || 'Document.pdf',
+      type: r.reason || 'On-Duty Application',
+      submittedAt: r.date || '2026-07-25',
+      status: r.status === 'pending' ? 'Pending Admin Approval' : r.status,
+      size: '1.8 MB',
+      studentName: r.studentName || 'Alex Johnson'
+    }))
+  ];
+
   return (
-    <div className="dashboard-content">
+    <div className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
         <div>
           <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Shield color="var(--accent-primary)" /> Administrator Overview
+            <Shield color="var(--accent-primary)" /> Administrator Overview &amp; Control Hub
           </h1>
-          <p className="page-subtitle">College-wide statistics, global eligibility thresholds, and student directory.</p>
+          <p className="page-subtitle">University-wide attendance compliance, risk management, and operational oversight.</p>
         </div>
 
         {/* ADMIN TARGET VIEW & PUSH CONTROL PANEL */}
@@ -1000,6 +1025,48 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      {/* TOP LEVEL OVERSIGHT MODE TOGGLE BAR */}
+      <div style={{ display: 'flex', gap: '8px', background: 'rgba(0,0,0,0.3)', padding: '6px', borderRadius: '16px', border: '1px solid var(--panel-border)', marginBottom: '24px', width: 'fit-content' }}>
+        <button
+          onClick={() => setAdminOversightMode('student')}
+          style={{
+            padding: '10px 22px',
+            borderRadius: '12px',
+            fontWeight: '700',
+            fontSize: '14px',
+            border: 'none',
+            cursor: 'pointer',
+            background: adminOversightMode === 'student' ? 'var(--accent-primary)' : 'transparent',
+            color: adminOversightMode === 'student' ? '#fff' : 'var(--text-muted)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.2s ease'
+          }}
+        >
+          🎓 Student View (Risk, Approvals &amp; Eligibility)
+        </button>
+        <button
+          onClick={() => setAdminOversightMode('faculty')}
+          style={{
+            padding: '10px 22px',
+            borderRadius: '12px',
+            fontWeight: '700',
+            fontSize: '14px',
+            border: 'none',
+            cursor: 'pointer',
+            background: adminOversightMode === 'faculty' ? 'var(--accent-secondary)' : 'transparent',
+            color: adminOversightMode === 'faculty' ? '#fff' : 'var(--text-muted)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            transition: 'all 0.2s ease'
+          }}
+        >
+          📋 Faculty View (Operations &amp; Compliance)
+        </button>
+      </div>
+
       {/* ADMIN PREVIEW MODAL / BANNER IF ACTIVE */}
       {adminPreviewRole !== 'none' && (
         <div style={{ background: 'rgba(139, 92, 246, 0.15)', border: '1px solid var(--accent-secondary)', padding: '16px 20px', borderRadius: '14px', marginBottom: '20px' }}>
@@ -1017,109 +1084,355 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      <div className="dashboard-grid">
-        {[
-          { icon: <Users size={24} />, value: totalStudents, label: 'Total Enrolled Students', bg: 'rgba(59,130,246,0.1)', color: 'var(--accent-primary)' },
-          { icon: <Shield size={24} />, value: Object.keys(dbState.faculty || {}).length || 18, label: 'Active Faculty Members', bg: 'rgba(139,92,246,0.1)', color: 'var(--accent-secondary)' },
-          { icon: <Award size={24} />, value: `${avgAttendance}%`, label: 'Average Attendance Rate', bg: 'rgba(16,185,129,0.1)', color: 'var(--status-safe)' },
-          { icon: <Bell size={24} />, value: '38 Days Left', label: 'End-Sem Exam Countdown', bg: 'rgba(245,158,11,0.1)', color: 'var(--status-warning)' },
-        ].map(m => (
-          <motion.div
-            key={m.label}
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.98 }}
-            className="glass-panel col-span-3"
-            style={{ display: 'flex', alignItems: 'center', gap: '16px' }}
-          >
-            <div style={{ padding: '12px', background: m.bg, color: m.color, borderRadius: '10px' }}>{m.icon}</div>
-            <div><h2 style={{ fontSize: '22px' }}>{m.value}</h2><p style={{ fontSize: '12px' }}>{m.label}</p></div>
-          </motion.div>
-        ))}
-
-        <div className="glass-panel col-span-12">
-          <h2 style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Settings size={20} /> Attendance Policy Manager
-          </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px', alignItems: 'center' }}>
-            <div>
-              <p style={{ fontSize: '14px', marginBottom: '16px' }}>
-                Set the global required attendance percentage for exam eligibility.
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <input type="range" min="50" max="90" value={requiredThreshold} onChange={e => setRequiredThreshold(parseInt(e.target.value))} style={{ flex: 1, accentColor: 'var(--accent-primary)', height: '6px', borderRadius: '3px', cursor: 'pointer' }} />
-                <span style={{ fontSize: '24px', fontWeight: '800', color: 'var(--accent-primary)', minWidth: '60px', textAlign: 'right' }}>{requiredThreshold}%</span>
-              </div>
+      {/* ────────────────────────────────────────────────────────── */}
+      {/* A. FACULTY VIEW (OPERATIONS & COMPLIANCE) */}
+      {/* ────────────────────────────────────────────────────────── */}
+      {adminOversightMode === 'faculty' && (
+        <div className="dashboard-grid">
+          {/* Live Session & Class Monitoring */}
+          <div className="glass-panel col-span-12">
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+              <Zap className="text-yellow-500" /> Live Campus Session &amp; Attendance Initiation Monitor
+            </h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+              {[
+                { course: 'CS101 Data Structures', teacher: 'Dr. R. Mehta', status: 'Live QR Active', time: '09:00 AM - 10:30 AM', room: 'Lab 302', flagged: false, scans: 24 },
+                { course: 'CS102 Database Systems', teacher: 'Prof. S. Radhakrishnan', status: 'Attendance Pending', time: '11:00 AM - 12:30 PM', room: 'Hall B-12', flagged: false, scans: 0 },
+                { course: 'CS103 Computer Networks', teacher: 'Dr. Neha Verma', status: '⚠️ Delayed Initiation (>10m)', time: '02:00 PM - 03:30 PM', room: 'Room 401', flagged: true, scans: 0 },
+              ].map((sess, idx) => (
+                <div 
+                  key={idx} 
+                  className="glass-panel" 
+                  style={{ 
+                    padding: '16px', 
+                    border: sess.flagged ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid var(--panel-border)',
+                    background: sess.flagged ? 'rgba(239, 68, 68, 0.08)' : 'var(--panel-bg)'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                    <div>
+                      <h4 style={{ fontSize: '15px', margin: 0 }}>{sess.course}</h4>
+                      <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '2px 0 0' }}>{sess.teacher} • {sess.room}</p>
+                    </div>
+                    <span className={`status-badge ${sess.flagged ? 'critical' : sess.scans > 0 ? 'safe' : 'warning'}`} style={{ fontSize: '11px' }}>
+                      {sess.status}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: 'var(--text-muted)', marginTop: '12px', paddingTop: '8px', borderTop: '1px solid var(--panel-border)' }}>
+                    <span>{sess.time}</span>
+                    <span style={{ fontWeight: '700', color: 'var(--accent-primary)' }}>{sess.scans} Scanned</span>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '20px', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <p style={{ fontSize: '12px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Academic Session</p>
-                <h3 style={{ fontSize: '18px', marginTop: '4px' }}>Fall Semester 2026</h3>
+          </div>
+
+          {/* OD Roster Dispatcher ("Push to Teacher") */}
+          <div className="glass-panel col-span-6">
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+              <Send className="text-blue-500" /> OD Roster Dispatcher ("Push to Teacher")
+            </h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+              Push approved On-Duty student lists directly to faculty registers so attendance updates automatically.
+            </p>
+            {pushRosterSuccessMsg && (
+              <div className="alert-success" style={{ marginBottom: '16px' }}>
+                <Check size={16} /> {pushRosterSuccessMsg}
               </div>
-              <button onClick={handleSaveConfig} className="btn btn-primary" style={{ padding: '10px 16px' }}>
-                {isSaved ? <><Check size={16} /> Saved</> : <><Save size={16} /> Save Policy</>}
+            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div className="input-group">
+                <label>Select Target Faculty Member</label>
+                <select className="form-control" value={targetTeacherRoster} onChange={e => setTargetTeacherRoster(e.target.value)}>
+                  <option value="Dr. R. Mehta">Dr. R. Mehta (CS101, CS102)</option>
+                  <option value="Prof. S. Radhakrishnan">Prof. S. Radhakrishnan (CS302)</option>
+                  <option value="Dr. Neha Verma">Dr. Neha Verma (CS303)</option>
+                </select>
+              </div>
+              <button 
+                onClick={() => {
+                  setPushRosterSuccessMsg(`Approved OD roster successfully pushed to ${targetTeacherRoster}'s register!`);
+                  setTimeout(() => setPushRosterSuccessMsg(''), 3500);
+                }}
+                className="btn btn-primary" 
+                style={{ padding: '12px' }}
+              >
+                Push Approved OD Roster to Teacher
               </button>
             </div>
           </div>
-        </div>
 
-        <div className="glass-panel col-span-12">
-          <h2 style={{ marginBottom: '16px' }}>Student Directory &amp; Eligibility</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '24px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
-              <Search size={18} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)', pointerEvents: 'none' }} />
-              <input type="text" placeholder="Search by name or ID..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="form-control" style={{ paddingLeft: '38px' }} />
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
-              <Filter size={18} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)', pointerEvents: 'none' }} />
-              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="form-control" style={{ paddingLeft: '38px' }}>
-                <option value="all">All Eligibility Zones</option>
-                <option value="eligible">Eligible Zone</option>
-                <option value="blocked">Blocked Zone</option>
-              </select>
-            </div>
-          </div>
-          <div style={{ overflowX: 'auto' }}>
-            {filteredStudents.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)', padding: '24px 0', textAlign: 'center' }}>No students match the search criteria.</p>
-            ) : (
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
+          {/* Session Overrides & Manual Audit Logs */}
+          <div className="glass-panel col-span-6">
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+              <Shield className="text-purple-500" /> Faculty Manual Audit &amp; Override Log
+            </h2>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ borderBottom: '1px solid var(--panel-border)' }}>
-                    {['Student Name', 'ID', 'Branch & Year', 'Overall Attendance', 'Eligibility'].map(h => (
-                      <th key={h} style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>{h}</th>
-                    ))}
+                  <tr style={{ borderBottom: '1px solid var(--panel-border)', textAlign: 'left', color: 'var(--text-muted)' }}>
+                    <th style={{ padding: '8px' }}>Faculty</th>
+                    <th style={{ padding: '8px' }}>Student</th>
+                    <th style={{ padding: '8px' }}>Action</th>
+                    <th style={{ padding: '8px' }}>Reason</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredStudents.map(stu => {
-                    const eligible = stu.overallAttendance >= requiredThreshold;
-                    return (
-                      <tr key={stu.id} style={{ borderBottom: '1px solid var(--panel-border)' }}>
-                        <td style={{ padding: '16px', fontWeight: '500' }}>{stu.name}</td>
-                        <td style={{ padding: '16px', fontFamily: 'monospace', fontSize: '13px' }}>{stu.id}</td>
-                        <td style={{ padding: '16px', fontSize: '13px', color: 'var(--text-muted)' }}>{stu.branch} · {stu.year}</td>
-                        <td style={{ padding: '16px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <span style={{ fontWeight: '700', fontSize: '15px', color: eligible ? 'var(--status-safe)' : 'var(--status-critical)' }}>{stu.overallAttendance}%</span>
-                            <div className="progress-container" style={{ margin: 0, width: '80px', height: '6px' }}>
-                              <div className={`progress-bar ${eligible ? 'progress-safe' : 'progress-critical'}`} style={{ width: `${stu.overallAttendance}%` }} />
-                            </div>
-                          </div>
-                        </td>
-                        <td style={{ padding: '16px' }}>
-                          {eligible
-                            ? <span className="status-badge safe" style={{ fontSize: '11px' }}><Check size={12} /> Eligible</span>
-                            : <span className="status-badge critical" style={{ fontSize: '11px' }}><Ban size={12} /> Blocked (&lt;{requiredThreshold}%)</span>}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  <tr style={{ borderBottom: '1px solid var(--panel-border)' }}>
+                    <td style={{ padding: '8px' }}>Dr. R. Mehta</td>
+                    <td style={{ padding: '8px' }}>Alex Johnson</td>
+                    <td style={{ padding: '8px' }}><span className="status-badge warning">Manual Override</span></td>
+                    <td style={{ padding: '8px', color: 'var(--text-muted)' }}>Camera Glitch Verification</td>
+                  </tr>
+                  <tr>
+                    <td style={{ padding: '8px' }}>Prof. S. Radhakrishnan</td>
+                    <td style={{ padding: '8px' }}>Ananya Sharma</td>
+                    <td style={{ padding: '8px' }}><span className="status-badge safe">OD Approved</span></td>
+                    <td style={{ padding: '8px', color: 'var(--text-muted)' }}>Hackathon OD Letter</td>
+                  </tr>
                 </tbody>
               </table>
-            )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* ────────────────────────────────────────────────────────── */}
+      {/* B. STUDENT VIEW (RISK, APPROVALS & ELIGIBILITY) */}
+      {/* ────────────────────────────────────────────────────────── */}
+      {adminOversightMode === 'student' && (
+        <div className="dashboard-grid">
+          {/* Summary Metric Cards */}
+          {[
+            { icon: <Users size={24} />, value: totalStudents, label: 'Total Enrolled Students', bg: 'rgba(59,130,246,0.1)', color: 'var(--accent-primary)' },
+            { icon: <Shield size={24} />, value: Object.keys(dbState.faculty || {}).length || 18, label: 'Active Faculty Members', bg: 'rgba(139,92,246,0.1)', color: 'var(--accent-secondary)' },
+            { icon: <Award size={24} />, value: `${avgAttendance}%`, label: 'Average Attendance Rate', bg: 'rgba(16,185,129,0.1)', color: 'var(--status-safe)' },
+            { icon: <Bell size={24} />, value: '38 Days Left', label: 'End-Sem Exam Countdown', bg: 'rgba(245,158,11,0.1)', color: 'var(--status-warning)' },
+          ].map(m => (
+            <motion.div
+              key={m.label}
+              whileHover={{ scale: 1.02, y: -2 }}
+              whileTap={{ scale: 0.98 }}
+              className="glass-panel col-span-3"
+              style={{ display: 'flex', alignItems: 'center', gap: '16px' }}
+            >
+              <div style={{ padding: '12px', background: m.bg, color: m.color, borderRadius: '10px' }}>{m.icon}</div>
+              <div><h2 style={{ fontSize: '22px', margin: 0 }}>{m.value}</h2><p style={{ fontSize: '12px', margin: 0 }}>{m.label}</p></div>
+            </motion.div>
+          ))}
+
+          {/* Interactive Document Review Pipeline */}
+          <div className="glass-panel col-span-12">
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+              <FileText className="text-blue-500" /> Student Document Review Pipeline (Medical &amp; OD Applications)
+            </h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+              Click on any student submission below to open the centered side-by-side verification inspector.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+              {pendingStudentDocs.length === 0 ? (
+                <p style={{ color: 'var(--text-muted)', gridColumn: '1 / -1', textAlign: 'center', padding: '24px' }}>No documents pending review.</p>
+              ) : (
+                pendingStudentDocs.map(doc => (
+                  <motion.div
+                    key={doc.id}
+                    whileHover={{ scale: 1.02 }}
+                    onClick={() => setSelectedReviewDoc(doc)}
+                    className="glass-panel"
+                    style={{ padding: '16px', cursor: 'pointer', border: '1px solid var(--panel-border)', background: 'var(--panel-bg)' }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ padding: '10px', background: 'rgba(59,130,246,0.1)', borderRadius: '10px', color: 'var(--accent-primary)' }}>
+                          <FileText size={20} />
+                        </div>
+                        <div>
+                          <h4 style={{ fontSize: '15px', margin: 0 }}>{doc.fileName}</h4>
+                          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '2px 0 0' }}>{doc.studentName || 'Student'} • {doc.type}</p>
+                        </div>
+                      </div>
+                      <span className="status-badge warning" style={{ fontSize: '11px' }}>{doc.status}</span>
+                    </div>
+                  </motion.div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Academic Scatter Plot */}
+          <div className="glass-panel col-span-12">
+            <h2 style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <TrendingUp size={20} className="text-purple-500" /> Academic Performance vs. Attendance Correlation Plot
+            </h2>
+            <div style={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                  <XAxis type="number" dataKey="x" name="Exam Score" unit=" pts" stroke="var(--text-muted)" domain={[30, 100]} />
+                  <YAxis type="number" dataKey="y" name="Attendance" unit="%" stroke="var(--text-muted)" domain={[30, 100]} />
+                  <ReTooltip content={<ScatterTooltip />} />
+                  <ReferenceLine y={75} stroke="var(--status-warning)" strokeDasharray="3 3" label={{ value: '75% Required', fill: 'var(--status-warning)', fontSize: 12 }} />
+                  <Scatter name="Students" data={studentList.map(s => ({ name: s.name, x: s.examScore || 75, y: s.overallAttendance }))} fill="var(--accent-primary)" />
+                </ScatterChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Student Directory Table */}
+          <div className="glass-panel col-span-12">
+            <h2 style={{ marginBottom: '16px' }}>Student Directory &amp; Exam Eligibility</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '16px', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                <Search size={18} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                <input type="text" placeholder="Search by name or ID..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="form-control" style={{ paddingLeft: '38px' }} />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+                <Filter size={18} style={{ position: 'absolute', left: '12px', color: 'var(--text-muted)', pointerEvents: 'none' }} />
+                <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="form-control" style={{ paddingLeft: '38px' }}>
+                  <option value="all">All Eligibility Zones</option>
+                  <option value="eligible">Eligible Zone (≥75%)</option>
+                  <option value="blocked">Detention Risk (&lt;75%)</option>
+                </select>
+              </div>
+            </div>
+            <div style={{ overflowX: 'auto' }}>
+              {filteredStudents.length === 0 ? (
+                <p style={{ color: 'var(--text-muted)', padding: '24px 0', textAlign: 'center' }}>No students match the search criteria.</p>
+              ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '600px' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--panel-border)' }}>
+                      {['Student Name', 'ID', 'Branch & Year', 'Overall Attendance', 'Eligibility Status'].map(h => (
+                        <th key={h} style={{ padding: '12px 16px', color: 'var(--text-muted)', fontSize: '12px', textTransform: 'uppercase' }}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredStudents.map(stu => {
+                      const eligible = stu.overallAttendance >= requiredThreshold;
+                      return (
+                        <tr key={stu.id} style={{ borderBottom: '1px solid var(--panel-border)' }}>
+                          <td style={{ padding: '16px', fontWeight: '500' }}>{stu.name}</td>
+                          <td style={{ padding: '16px', fontFamily: 'monospace', fontSize: '13px' }}>{stu.id}</td>
+                          <td style={{ padding: '16px', fontSize: '13px', color: 'var(--text-muted)' }}>{stu.branch} · {stu.year}</td>
+                          <td style={{ padding: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <span style={{ fontWeight: '700', fontSize: '15px', color: eligible ? 'var(--status-safe)' : 'var(--status-critical)' }}>{stu.overallAttendance}%</span>
+                              <div className="progress-container" style={{ margin: 0, width: '80px', height: '6px' }}>
+                                <div className={`progress-bar ${eligible ? 'progress-safe' : 'progress-critical'}`} style={{ width: `${stu.overallAttendance}%` }} />
+                              </div>
+                            </div>
+                          </td>
+                          <td style={{ padding: '16px' }}>
+                            {eligible
+                              ? <span className="status-badge safe" style={{ fontSize: '11px' }}><Check size={12} /> Eligible</span>
+                              : <span className="status-badge critical" style={{ fontSize: '11px' }}><Ban size={12} /> Detention Risk (&lt;{requiredThreshold}%)</span>}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CENTERED SIDE-BY-SIDE DOCUMENT REVIEW INSPECTOR MODAL */}
+      <AnimatePresence>
+        {selectedReviewDoc && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="glass-panel max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6 rounded-2xl relative border border-slate-700"
+              style={{ position: 'relative' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid var(--panel-border)', paddingBottom: '12px' }}>
+                <div>
+                  <h3 style={{ fontSize: '20px', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <FileText color="var(--accent-primary)" /> Document Inspection &amp; Verification
+                  </h3>
+                  <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>Side-by-side document review pipeline</p>
+                </div>
+                <button onClick={() => setSelectedReviewDoc(null)} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer' }}>
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                {/* Left Column: File & Preview */}
+                <div style={{ background: 'rgba(0,0,0,0.3)', padding: '20px', borderRadius: '16px', border: '1px solid var(--panel-border)' }}>
+                  <div style={{ height: '220px', background: 'rgba(59, 130, 246, 0.08)', borderRadius: '12px', border: '2px dashed rgba(59, 130, 246, 0.3)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                    <FileText size={48} color="var(--accent-primary)" style={{ marginBottom: '12px' }} />
+                    <span style={{ fontWeight: '700', fontSize: '15px' }}>{selectedReviewDoc.fileName || selectedReviewDoc.proofName || 'document.pdf'}</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{selectedReviewDoc.size || '1.42 MB'} • Official Certificate</span>
+                  </div>
+                  <div style={{ fontSize: '13px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <div><strong>Applicant:</strong> {selectedReviewDoc.studentName || 'Alex Johnson'}</div>
+                    <div><strong>Document Type:</strong> {selectedReviewDoc.type || selectedReviewDoc.reason || 'Medical Certificate'}</div>
+                    <div><strong>Submission Date:</strong> {selectedReviewDoc.submittedAt || selectedReviewDoc.date || '2026-07-26'}</div>
+                    <div><strong>Current Status:</strong> <span className="status-badge warning">{selectedReviewDoc.status || 'Pending Approval'}</span></div>
+                  </div>
+                </div>
+
+                {/* Right Column: Approval / Rejection Controls */}
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                  <div>
+                    <h4 style={{ fontSize: '16px', marginBottom: '12px' }}>Reviewer Action</h4>
+                    <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+                      Approving this document will auto-excuse missed attendance for the corresponding class session.
+                    </p>
+
+                    <div className="input-group" style={{ marginBottom: '20px' }}>
+                      <label>Rejection / Feedback Note (Optional)</label>
+                      <textarea
+                        className="form-control"
+                        rows={3}
+                        placeholder="Provide reason if rejecting..."
+                        value={rejectionNoteInput}
+                        onChange={e => setRejectionNoteInput(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button
+                      className="btn btn-primary"
+                      style={{ flex: 1, padding: '12px', background: 'var(--status-safe)', borderColor: 'var(--status-safe)' }}
+                      onClick={() => {
+                        selectedReviewDoc.status = 'Approved (Auto-Excused)';
+                        setDocReviewStatus('Approved! Attendance auto-excused.');
+                        setTimeout(() => { setSelectedReviewDoc(null); setDocReviewStatus(''); }, 1200);
+                      }}
+                    >
+                      <Check size={16} /> Approve (Auto-Excuse)
+                    </button>
+                    <button
+                      className="btn"
+                      style={{ flex: 1, padding: '12px', background: 'var(--status-critical-bg)', color: 'var(--status-critical)', border: '1px solid var(--status-critical)' }}
+                      onClick={() => {
+                        selectedReviewDoc.status = 'Rejected';
+                        setDocReviewStatus('Rejected with feedback note dispatched.');
+                        setTimeout(() => { setSelectedReviewDoc(null); setDocReviewStatus(''); }, 1200);
+                      }}
+                    >
+                      <X size={16} /> Reject (with note)
+                    </button>
+                  </div>
+                  {docReviewStatus && (
+                    <p style={{ fontSize: '13px', color: 'var(--status-safe)', marginTop: '12px', textAlign: 'center', fontWeight: '600' }}>
+                      {docReviewStatus}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

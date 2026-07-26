@@ -31,7 +31,7 @@ const SubjectTrends = () => {
   };
 
   return (
-    <div className="dashboard-content">
+    <div className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="page-header">
         <h1 className="page-title" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <TrendingUp color="var(--accent-primary)" /> Subject-wise Attendance Trends

@@ -235,7 +235,7 @@ const StudentDashboard = () => {
   };
 
   return (
-    <div className="dashboard-content">
+    <div className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="page-header" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
         <div>
           <h1 className="page-title">Welcome back, {student.name.split(' ')[0]}</h1>

@@ -35,12 +35,11 @@ const Login = () => {
 
     const result = login(userId, password);
     if (result.success) {
-      // Determine redirection based on credentials
-      if (userId.startsWith('STU')) {
-        navigate('/student');
-      } else if (userId.startsWith('FAC')) {
+      const userRole = dbState?.users?.[userId]?.role || 
+        (userId.toUpperCase().startsWith('FAC') ? 'faculty' : userId.toUpperCase().startsWith('ADM') ? 'admin' : 'student');
+      if (userRole === 'faculty') {
         navigate('/faculty');
-      } else if (userId.startsWith('ADM')) {
+      } else if (userRole === 'admin') {
         navigate('/admin');
       } else {
         navigate('/student');

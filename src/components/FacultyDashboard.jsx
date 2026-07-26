@@ -163,7 +163,7 @@ const FacultyDashboard = () => {
   const qrCells = generateSvgQrCells(qrToken);
 
   return (
-    <div className="dashboard-content">
+    <div className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {/* 1. Header & Quick Launch QR Generator */}
       <div className="page-header" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
         <div>
