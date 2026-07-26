@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useMockData } from '../MockDataContext';
+import { motion } from 'framer-motion';
 import {
   HeartPulse, CheckCircle, AlertTriangle, XCircle, Calendar,
-  Clock, MapPin, Plus, Send, AlertCircle, Sparkles, User
+  Clock, MapPin, Plus, Send, AlertCircle, Sparkles, User, Hourglass, ClipboardEdit
 } from 'lucide-react';
 
 const RecoveryPlanner = () => {
@@ -104,8 +105,8 @@ const RecoveryPlanner = () => {
       </div>
 
       {actionSuccess && (
-        <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid var(--status-safe)', color: 'var(--status-safe)', padding: '12px 18px', borderRadius: '12px', marginBottom: '20px', fontSize: '13px', fontWeight: '600' }}>
-          ✔ {actionSuccess}
+        <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid var(--status-safe)', color: 'var(--status-safe)', padding: '12px 18px', borderRadius: '12px', marginBottom: '20px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }}><CheckCircle size={16} /></motion.div> {actionSuccess}
         </div>
       )}
 
@@ -240,17 +241,17 @@ const RecoveryPlanner = () => {
               <div key={rec.id} style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '12px', padding: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                   <div>
-                    <span className="status-badge warning" style={{ fontSize: '11px', marginBottom: '6px', display: 'inline-block' }}>
-                      🟡 Rescheduled / Recovery
+                    <span className="status-badge warning" style={{ fontSize: '11px', marginBottom: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <motion.div animate={{ rotate: [0, 10, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }}><AlertCircle size={12} /></motion.div> Rescheduled / Recovery
                     </span>
                     <h3 style={{ fontSize: '16px', margin: 0 }}>{rec.courseName}</h3>
                   </div>
                   <span className="status-badge safe">{rec.status}</span>
                 </div>
                 <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <span>📅 <strong>Scheduled:</strong> {rec.dayOfWeek} ({rec.scheduledDate})</span>
-                  <span>⏰ <strong>Time Slot:</strong> {rec.timeSlot}</span>
-                  <span>📍 <strong>Location:</strong> {rec.room} · {rec.faculty}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14} color="var(--text-muted)"/> <strong>Scheduled:</strong> {rec.dayOfWeek} ({rec.scheduledDate})</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Clock size={14} color="var(--text-muted)"/> <strong>Time Slot:</strong> {rec.timeSlot}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={14} color="var(--text-muted)"/> <strong>Location:</strong> {rec.room} · {rec.faculty}</span>
                 </div>
               </div>
             ))}
@@ -259,17 +260,17 @@ const RecoveryPlanner = () => {
               <div key={canc.id} style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '12px', padding: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
                   <div>
-                    <span className="status-badge critical" style={{ fontSize: '11px', marginBottom: '6px', display: 'inline-block' }}>
-                      🔴 Cancelled Class
+                    <span className="status-badge critical" style={{ fontSize: '11px', marginBottom: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }}><XCircle size={12} /></motion.div> Cancelled Class
                     </span>
                     <h3 style={{ fontSize: '16px', margin: 0 }}>{canc.courseName}</h3>
                   </div>
                   <span className="status-badge critical">{canc.status}</span>
                 </div>
                 <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  <span>📅 <strong>Original Date:</strong> {canc.date}</span>
-                  <span>⏳ <strong>Missed Hours:</strong> {canc.missedHours} Hours</span>
-                  <span>📝 <strong>Reason:</strong> {canc.reason}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Calendar size={14} color="var(--text-muted)"/> <strong>Original Date:</strong> {canc.date}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Hourglass size={14} color="var(--text-muted)"/> <strong>Missed Hours:</strong> {canc.missedHours} Hours</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><ClipboardEdit size={14} color="var(--text-muted)"/> <strong>Reason:</strong> {canc.reason}</span>
                 </div>
               </div>
             ))}

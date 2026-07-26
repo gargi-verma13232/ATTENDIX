@@ -17,8 +17,10 @@ import {
   ShieldAlert,
   ShieldCheck,
   Calendar,
-  Sparkles
-} from 'lucide-react';
+  Sparkles,
+  XCircle,
+  AlertCircle,
+  Clock
 
 const calculateHaversineDistance = (lat1, lon1, lat2, lon2) => {
   const toRad = (value) => (value * Math.PI) / 180;
@@ -208,7 +210,7 @@ const StudentDashboard = () => {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '18px' }}>📢</span>
+                <Sparkles size={20} className="text-blue-500" />
                 <div>
                   <span style={{ fontSize: '13px', fontWeight: '700', color: 'var(--accent-primary)' }}>
                     {notif.title}
@@ -292,23 +294,23 @@ const StudentDashboard = () => {
             </div>
 
             {/* Legend */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(0,0,0,0.15)', padding: '8px 14px', borderRadius: '10px', fontSize: '12px', border: '1px solid var(--panel-border)' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>🟢 Attended</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>🔴 Missed</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>🟡 Recovered/OD</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>🔵 Scheduled</span>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '13px', fontWeight: '500', color: 'var(--text-secondary)' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }}><CheckCircle2 size={16} color="#10b981" /></motion.span> Attended</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, delay: 0.5 }}><XCircle size={16} color="#ef4444" /></motion.span> Missed</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, delay: 1 }}><AlertCircle size={16} color="#f59e0b" /></motion.span> Recovered/OD</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><motion.span animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, delay: 1.5 }}><Clock size={16} color="#3b82f6" /></motion.span> Scheduled</span>
             </div>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
             {[
-              { date: '2026-07-26', day: 'Sun', title: 'Data Structures', time: '09:00 AM', status: 'attended', icon: '🟢' },
-              { date: '2026-07-25', day: 'Sat', title: 'Database Systems', time: '11:00 AM', status: 'missed', icon: '🔴' },
-              { date: '2026-07-24', day: 'Fri', title: 'Operating Systems', time: '02:00 PM', status: 'recovered', icon: '🟡' },
-              { date: '2026-07-23', day: 'Thu', title: 'Communication', time: '10:00 AM', status: 'attended', icon: '🟢' },
-              { date: '2026-07-22', day: 'Wed', title: 'Data Structures', time: '09:00 AM', status: 'attended', icon: '🟢' },
-              { date: '2026-07-27', day: 'Mon', title: 'Database Systems', time: '11:00 AM', status: 'upcoming', icon: '🔵' },
-              { date: '2026-07-28', day: 'Tue', title: 'Operating Systems', time: '02:00 PM', status: 'upcoming', icon: '🔵' },
+              { date: '2026-07-26', day: 'Sun', title: 'Data Structures', time: '09:00 AM', status: 'attended', icon: <CheckCircle2 size={18} color="#10b981" /> },
+              { date: '2026-07-25', day: 'Sat', title: 'Database Systems', time: '11:00 AM', status: 'missed', icon: <XCircle size={18} color="#ef4444" /> },
+              { date: '2026-07-24', day: 'Fri', title: 'Operating Systems', time: '02:00 PM', status: 'recovered', icon: <AlertCircle size={18} color="#f59e0b" /> },
+              { date: '2026-07-23', day: 'Thu', title: 'Communication', time: '10:00 AM', status: 'attended', icon: <CheckCircle2 size={18} color="#10b981" /> },
+              { date: '2026-07-22', day: 'Wed', title: 'Data Structures', time: '09:00 AM', status: 'attended', icon: <CheckCircle2 size={18} color="#10b981" /> },
+              { date: '2026-07-27', day: 'Mon', title: 'Database Systems', time: '11:00 AM', status: 'upcoming', icon: <Clock size={18} color="#3b82f6" /> },
+              { date: '2026-07-28', day: 'Tue', title: 'Operating Systems', time: '02:00 PM', status: 'upcoming', icon: <Clock size={18} color="#3b82f6" /> },
             ].map((dayItem, i) => {
               const bgMap = {
                 attended: 'rgba(16, 185, 129, 0.1)',
@@ -337,7 +339,9 @@ const StudentDashboard = () => {
                   <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: '700' }}>
                     {dayItem.day} · {dayItem.date.split('-').slice(1).join('/')}
                   </div>
-                  <div style={{ fontSize: '20px', margin: '6px 0 2px' }}>{dayItem.icon}</div>
+                  <div style={{ fontSize: '20px', margin: '6px 0 2px' }}>
+                    <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 2 }}>{dayItem.icon}</motion.div>
+                  </div>
                   <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {dayItem.title}
                   </div>
@@ -390,8 +394,19 @@ const StudentDashboard = () => {
                       <h3 style={{ fontSize: '16px', margin: '4px 0 0' }}>{sess.courseName}</h3>
                     </div>
 
-                    <span className={`status-badge ${isAbsent ? 'critical' : 'safe'}`} style={{ fontSize: '12px' }}>
-                      {isAbsent ? '✖ Absent' : '✔ Present'}
+                    <span style={{
+                      padding: '6px 12px',
+                      borderRadius: '20px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: isAbsent ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                      color: isAbsent ? '#ef4444' : '#10b981'
+                    }}>
+                      {isAbsent ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
+                      {isAbsent ? 'Absent' : 'Present'}
                     </span>
                   </div>
 
@@ -492,7 +507,11 @@ const StudentDashboard = () => {
                   </div>
                   <div>
                     <div style={{ fontSize: '14px', fontWeight: '600' }}>
-                      {biometricUnlocked ? 'WebAuthn Verified ✔' : 'WebAuthn Fingerprint Lock'}
+                      {biometricUnlocked ? (
+                        <>WebAuthn Verified <CheckCircle2 size={16} color="#10b981" /></>
+                      ) : (
+                        'WebAuthn Fingerprint Lock'
+                      )}
                     </div>
                     <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
                       {biometricUnlocked ? 'Biometric Touch ID confirmed' : 'Required before scan signoff'}

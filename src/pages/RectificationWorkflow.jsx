@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useMockData } from '../MockDataContext';
 import {
   FileText, Upload, Send, Calculator, AlertCircle, ArrowRight,
-  CheckCircle, FileUp, Shield, Check, X, Eye, Sparkles
+  CheckCircle, FileUp, Shield, Check, X, Eye, Sparkles,
+  CheckCircle2, XCircle, Clock
 } from 'lucide-react';
 
 const RectificationWorkflow = () => {
@@ -218,7 +219,9 @@ const RectificationWorkflow = () => {
                     </div>
 
                     <span className={`status-badge ${isApproved ? 'safe' : isPending ? 'warning' : 'critical'}`}>
-                      {isApproved ? '✔ Approved (Excused)' : isPending ? '⏳ Pending Review' : '✖ Denied'}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {isApproved ? <><CheckCircle2 size={14} /> Approved (Excused)</> : isPending ? <><motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}><Clock size={14} /></motion.div> Pending Review</> : <><XCircle size={14} /> Denied</>}
+                      </div>
                     </span>
                   </div>
 

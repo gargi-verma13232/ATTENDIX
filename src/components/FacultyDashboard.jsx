@@ -364,11 +364,11 @@ const FacultyDashboard = () => {
                     >
                       {isPresent ? (
                         <>
-                          <CheckCircle2 size={16} /> ✔ Attended
+                          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }}><CheckCircle2 size={16} color="#10b981" /></motion.div> Attended
                         </>
                       ) : (
                         <>
-                          <XCircle size={16} /> ✖ Absent
+                          <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, delay: 0.5 }}><XCircle size={16} color="#ef4444" /></motion.div> Absent
                         </>
                       )}
                     </span>
@@ -484,7 +484,13 @@ const FacultyDashboard = () => {
                     </div>
                   ) : (
                     <span className={`status-badge ${req.status === 'approved' ? 'safe' : 'critical'}`}>
-                      {req.status === 'approved' ? '✔ Approved' : '✖ Rejected'}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {req.status === 'approved' ? (
+                          <><CheckCircle2 size={14} /> Approved</>
+                        ) : (
+                          <><XCircle size={14} /> Rejected</>
+                        )}
+                      </div>
                     </span>
                   )}
                 </div>

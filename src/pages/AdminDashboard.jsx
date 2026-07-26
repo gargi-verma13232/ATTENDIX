@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useMockData } from '../MockDataContext';
 import {
   Shield, Users, Award, AlertTriangle, Settings, Save, Check, Ban,
-  Search, Filter, TrendingUp, Zap, Bell, Database, Plus, MapPin, Navigation, UserPlus
+  Search, Filter, TrendingUp, Zap, Bell, Database, Plus, MapPin, Navigation, UserPlus, Eye, X
 } from 'lucide-react';
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
@@ -860,11 +860,11 @@ const AdminDashboard = () => {
       {adminPreviewRole !== 'none' && (
         <div style={{ background: 'rgba(139, 92, 246, 0.15)', border: '1px solid var(--accent-secondary)', padding: '16px 20px', borderRadius: '14px', marginBottom: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <span className="status-badge safe" style={{ background: 'var(--accent-secondary)', color: '#fff' }}>
-              👁️ Admin Inspection Preview: View as {adminPreviewRole === 'student' ? 'Student' : 'Teacher'}
+            <span className="status-badge safe" style={{ background: 'var(--accent-secondary)', color: '#fff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2 }}><Eye size={16} /></motion.div> Admin Inspection Preview: View as {adminPreviewRole === 'student' ? 'Student' : 'Teacher'}
             </span>
-            <button onClick={() => setAdminPreviewRole('none')} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: '700' }}>
-              ✖ Close Preview
+            <button onClick={() => setAdminPreviewRole('none')} style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <X size={14} /> Close Preview
             </button>
           </div>
           <p style={{ fontSize: '13px', margin: 0, color: 'var(--text-main)' }}>
