@@ -15,26 +15,42 @@ import AdminDashboard from './pages/AdminDashboard';
 // Components
 import FacultyDashboard from './components/FacultyDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
+import ErrorBoundary from './components/ErrorBoundary';
 
 import './index.css';
 
-// A simple root redirect handler based on authentication status and role
+// A root redirect handler based on authentication status and role with optional chaining & loading safety
 const RootRedirect = () => {
-  const { currentUser } = useMockData();
+  const { currentUser, loading } = useMockData();
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-primary, #0f172a)', color: '#ffffff' }}>
+        <div style={{ border: '4px solid rgba(255,255,255,0.1)', borderTop: '4px solid #3b82f6', borderRadius: '50%', width: '40px', height: '40px', animation: 'spin 1s linear infinite' }} />
+        <p style={{ marginTop: '16px', fontSize: '14px', color: '#94a3b8' }}>Loading Attendix Workspace...</p>
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return <Navigate to="/login" replace />;
   }
 
-  if (currentUser.role === 'faculty') {
+  const role = currentUser?.role;
+
+  if (role === 'faculty') {
     return <Navigate to="/faculty" replace />;
   }
 
-  if (currentUser.role === 'admin') {
+  if (role === 'admin') {
     return <Navigate to="/admin" replace />;
   }
 
-  return <Navigate to="/student" replace />;
+  if (role === 'student') {
+    return <Navigate to="/student" replace />;
+  }
+
+  return <Navigate to="/login" replace />;
 };
 
 function AppContent() {
@@ -51,7 +67,9 @@ function AppContent() {
         path="/student" 
         element={
           <ProtectedRoute allowedRoles={['student']}>
-            <DashboardLayout />
+            <ErrorBoundary title="Student Dashboard Error">
+              <DashboardLayout />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       >
@@ -66,7 +84,9 @@ function AppContent() {
         path="/faculty" 
         element={
           <ProtectedRoute allowedRoles={['faculty']}>
-            <DashboardLayout />
+            <ErrorBoundary title="Faculty Dashboard Error">
+              <DashboardLayout />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       >
@@ -78,7 +98,9 @@ function AppContent() {
         path="/admin" 
         element={
           <ProtectedRoute allowedRoles={['admin']}>
-            <DashboardLayout />
+            <ErrorBoundary title="Admin Workspace Error">
+              <DashboardLayout />
+            </ErrorBoundary>
           </ProtectedRoute>
         }
       >
@@ -86,8 +108,8 @@ function AppContent() {
         <Route path="data" element={<AdminDashboard />} />
       </Route>
 
-      {/* Catch-all redirect */}
-      <Route path="*" element={<RootRedirect />} />
+      {/* Catch-All 404 Route */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

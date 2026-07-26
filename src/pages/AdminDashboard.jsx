@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useMockData } from '../MockDataContext';
 import {
   Shield, Users, Award, AlertTriangle, Settings, Save, Check, Ban,
-  Search, Filter, TrendingUp, Zap, Bell, Database, Plus, MapPin, Navigation, UserPlus, Eye, X, MessageSquare, Send
+  Search, Filter, TrendingUp, Zap, Bell, Database, Plus, MapPin, Navigation, UserPlus, Eye, X, MessageSquare, Send, FileText
 } from 'lucide-react';
 import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
@@ -1403,7 +1403,7 @@ const AdminDashboard = () => {
                       className="btn btn-primary"
                       style={{ flex: 1, padding: '12px', background: 'var(--status-safe)', borderColor: 'var(--status-safe)' }}
                       onClick={() => {
-                        selectedReviewDoc.status = 'Approved (Auto-Excused)';
+                        setSelectedReviewDoc(prev => prev ? ({ ...prev, status: 'Approved (Auto-Excused)' }) : null);
                         setDocReviewStatus('Approved! Attendance auto-excused.');
                         setTimeout(() => { setSelectedReviewDoc(null); setDocReviewStatus(''); }, 1200);
                       }}
@@ -1414,7 +1414,7 @@ const AdminDashboard = () => {
                       className="btn"
                       style={{ flex: 1, padding: '12px', background: 'var(--status-critical-bg)', color: 'var(--status-critical)', border: '1px solid var(--status-critical)' }}
                       onClick={() => {
-                        selectedReviewDoc.status = 'Rejected';
+                        setSelectedReviewDoc(prev => prev ? ({ ...prev, status: 'Rejected' }) : null);
                         setDocReviewStatus('Rejected with feedback note dispatched.');
                         setTimeout(() => { setSelectedReviewDoc(null); setDocReviewStatus(''); }, 1200);
                       }}

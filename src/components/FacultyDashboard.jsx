@@ -47,7 +47,8 @@ const FacultyDashboard = () => {
     scannedStudentsList,
     campusConfig,
     startSessionQR,
-    stopSessionQR
+    stopSessionQR,
+    notices = []
   } = useMockData();
 
   // Safe fallback for faculty profile
