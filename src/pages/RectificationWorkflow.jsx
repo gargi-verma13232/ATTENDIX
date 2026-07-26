@@ -103,108 +103,58 @@ const RectificationWorkflow = () => {
       </div>
 
       <div className="dashboard-grid">
-        {/* 1. STUDENT DOCUMENT UPLOADER */}
-        <div className="glass-panel col-span-6">
-          <h2 style={{ marginBottom: '14px', fontSize: '18px' }}>Log Official Document / Leave Request</h2>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '20px' }}>
-            Submit medical certificates, leave applications, or event permissions for verification.
-          </p>
-
-          {isSuccess && (
-            <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid var(--status-safe)', color: 'var(--status-safe)', padding: '12px', borderRadius: '10px', fontSize: '13px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '500' }}>
-              <CheckCircle size={16} /> Document submitted! Routed to Admin Inspection Pipeline.
-            </div>
-          )}
-
-          {errorMsg && (
-            <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid var(--status-critical)', color: 'var(--status-critical)', padding: '12px', borderRadius: '10px', fontSize: '13px', marginBottom: '16px', fontWeight: '500' }}>
-              {errorMsg}
-            </div>
-          )}
-
-          <form onSubmit={handleFormSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)' }}>Document Type</label>
-                <select value={docType} onChange={(e) => setDocType(e.target.value)} className="form-control">
-                  <option value="Medical Certificate">Medical Certificate</option>
-                  <option value="Leave Application">Leave Application</option>
-                  <option value="Official Sports ID Proof">Official Sports ID Proof</option>
-                  <option value="Event OD Permission">Event OD Permission</option>
-                </select>
+        {/* 1. STUDENT DOCUMENT UPLOADER & PORTAL LAUNCHER */}
+        <div className="glass-panel col-span-6" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+              <div style={{ padding: '10px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--accent-primary)' }}>
+                <Upload size={22} />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)' }}>Absence Date</label>
-                <input type="date" value={reqDate} onChange={(e) => setReqDate(e.target.value)} className="form-control" required />
+                <h2 style={{ fontSize: '18px', fontWeight: '800', margin: 0 }}>Official Document &amp; OD Portal</h2>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                  Submit medical certificates, leave applications, or event permissions for verification.
+                </p>
               </div>
             </div>
 
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)' }}>Target Subject / Course</label>
-              <select value={reqSubject} onChange={(e) => setReqSubject(e.target.value)} className="form-control">
-                {subjects.map(sub => <option key={sub.id} value={sub.id}>{sub.name}</option>)}
-              </select>
-            </div>
+            {isSuccess && (
+              <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid var(--status-safe)', color: 'var(--status-safe)', padding: '12px', borderRadius: '10px', fontSize: '13px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '500' }}>
+                <CheckCircle size={16} /> Document submitted! Routed to Admin Inspection Pipeline.
+              </div>
+            )}
 
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)' }}>Reason / Medical Diagnosis</label>
-              <input type="text" placeholder="e.g. Viral Fever & Medical Rest" value={reqReason} onChange={(e) => setReqReason(e.target.value)} className="form-control" required />
-            </div>
+            {errorMsg && (
+              <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid var(--status-critical)', color: 'var(--status-critical)', padding: '12px', borderRadius: '10px', fontSize: '13px', marginBottom: '16px', fontWeight: '500' }}>
+                {errorMsg}
+              </div>
+            )}
 
-            <div>
-              <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', marginBottom: '6px', color: 'var(--text-muted)' }}>Official Proof Document</label>
-              <div
-                onClick={() => setShowUploadModal(true)}
-                style={{
-                  border: uploadedFile ? '1px solid rgba(16, 185, 129, 0.4)' : '1px dashed rgba(59, 130, 246, 0.4)',
-                  borderRadius: '16px',
-                  padding: '20px 16px',
-                  textAlign: 'center',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                  background: uploadedFile ? 'rgba(16, 185, 129, 0.06)' : 'rgba(59, 130, 246, 0.05)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '12px'
-                }}
-              >
-                {uploadedFile ? (
-                  <>
-                    <div style={{ padding: '10px', background: 'rgba(16, 185, 129, 0.15)', borderRadius: '12px', color: 'var(--status-safe)' }}>
-                      <FileUp size={22} />
-                    </div>
-                    <div style={{ textAlign: 'left', flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {uploadedFile}
-                      </p>
-                      <p style={{ fontSize: '11px', color: 'var(--status-safe)', margin: '2px 0 0', fontWeight: '600' }}>
-                        ✓ File Attached — Click to replace or change category
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div style={{ padding: '10px', background: 'rgba(59, 130, 246, 0.15)', borderRadius: '12px', color: 'var(--accent-primary)' }}>
-                      <Upload size={22} />
-                    </div>
-                    <div style={{ textAlign: 'left' }}>
-                      <p style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc', margin: 0 }}>
-                        Click to Open Document Verification Upload Portal
-                      </p>
-                      <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
-                        Attach PDF, PNG, JPG proof files with live thumbnail preview
-                      </p>
-                    </div>
-                  </>
-                )}
+            {/* Feature Highlights & Storage Badges */}
+            <div className="panel-inset" style={{ marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
+                <CheckCircle size={16} color="var(--status-safe)" />
+                <span><strong>Auto-Excuse Engine</strong>: Approved ODs convert past absent logs automatically.</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
+                <FileUp size={16} color="var(--accent-primary)" />
+                <span><strong>Supported Formats</strong>: PDF, PNG, JPG files up to 5MB from your device.</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px' }}>
+                <Shield size={16} color="var(--accent-secondary)" />
+                <span><strong>Direct Routing</strong>: Submissions route instantly to Admin &amp; Faculty Review inbox.</span>
               </div>
             </div>
+          </div>
 
-            <button type="submit" className="btn btn-primary" style={{ padding: '12px' }}>
-              <Send size={16} /> Submit Document Application
-            </button>
-          </form>
+          <button
+            type="button"
+            onClick={() => setShowUploadModal(true)}
+            className="btn btn-primary"
+            style={{ width: '100%', padding: '14px', fontSize: '15px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}
+          >
+            <Upload size={18} /> Upload Proof Document &amp; Submit Request
+          </button>
         </div>
 
         {/* Document Upload Modal */}
@@ -212,6 +162,7 @@ const RectificationWorkflow = () => {
           isOpen={showUploadModal}
           onClose={() => setShowUploadModal(false)}
           onSubmitDoc={handleModalSubmitDoc}
+          subjects={subjects}
         />
 
         {/* 2. ADMIN & FACULTY INSPECTION PIPELINE & AUTO-EXCUSE ENGINE */}

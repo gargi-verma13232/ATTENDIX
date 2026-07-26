@@ -11,7 +11,10 @@ import {
   FileCheck,
   Stethoscope,
   Award,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Calendar,
+  BookOpen,
+  Info
 } from 'lucide-react';
 
 const CATEGORIES = [
@@ -21,8 +24,19 @@ const CATEGORIES = [
   { id: 'Official Sports ID Proof', label: 'Sports / Event ID', icon: FileSpreadsheet, desc: 'University representation' }
 ];
 
-const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
+const DocumentUploadModal = ({
+  isOpen,
+  onClose,
+  onSubmitDoc,
+  subjects = [],
+  initialDate = '2026-07-26',
+  initialSubject = '',
+  initialReason = ''
+}) => {
   const [docType, setDocType] = useState('Medical Certificate');
+  const [reqDate, setReqDate] = useState(initialDate);
+  const [reqSubject, setReqSubject] = useState(initialSubject || (subjects[0]?.id || 'CS301'));
+  const [reqReason, setReqReason] = useState(initialReason);
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -79,7 +93,7 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
     setIsUploading(true);
     let prog = 0;
     const interval = setInterval(() => {
-      prog += 20;
+      prog += 25;
       setUploadProgress(prog);
       if (prog >= 100) {
         clearInterval(interval);
@@ -87,6 +101,9 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
         onSubmitDoc({
           type: docType,
           docType: docType,
+          date: reqDate,
+          subjectId: reqSubject,
+          reason: reqReason || `${docType} Submission`,
           fileName: selectedFile.name,
           size: formattedSize,
           file: selectedFile,
@@ -97,7 +114,7 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
         handleRemoveFile();
         onClose();
       }
-    }, 200);
+    }, 180);
   };
 
   return (
@@ -111,12 +128,12 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
         }}
       >
         <motion.div
-          initial={{ scale: 0.92, opacity: 0, y: 15 }}
+          initial={{ scale: 0.94, opacity: 0, y: 15 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.92, opacity: 0, y: 15 }}
+          exit={{ scale: 0.94, opacity: 0, y: 15 }}
           transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-          className="glass-panel max-w-xl w-full p-6 sm:p-7 rounded-3xl relative border border-slate-700/80 shadow-2xl overflow-hidden"
-          style={{ background: 'rgba(15, 23, 42, 0.96)' }}
+          className="glass-panel max-w-2xl w-full p-6 sm:p-7 rounded-3xl relative border border-slate-700/80 shadow-2xl overflow-y-auto max-h-[90vh]"
+          style={{ background: 'var(--panel-bg, rgba(15, 23, 42, 0.97))' }}
         >
           {/* Header Banner */}
           <div style={{
@@ -125,7 +142,7 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
             alignItems: 'center',
             paddingBottom: '16px',
             marginBottom: '20px',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
+            borderBottom: '1px solid var(--panel-border)'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{
@@ -138,11 +155,11 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
                 <FileCheck size={24} />
               </div>
               <div>
-                <h3 style={{ fontSize: '19px', fontWeight: '800', margin: 0, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  Document Verification Portal
+                <h3 style={{ fontSize: '20px', fontWeight: '800', margin: 0, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  Document Verification Upload Portal
                 </h3>
-                <p style={{ fontSize: '12px', color: '#94a3b8', margin: '2px 0 0' }}>
-                  Submit medical or OD certificates for auto-excuse attendance clearance
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                  Upload your medical certificate or OD proof for automatic attendance clearance
                 </p>
               </div>
             </div>
@@ -152,14 +169,14 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
               onClick={() => { if (!isUploading) onClose(); }}
               style={{
                 background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: '1px solid var(--panel-border)',
                 borderRadius: '50%',
                 width: '34px',
                 height: '34px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#94a3b8',
+                color: 'var(--text-muted)',
                 cursor: isUploading ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s ease'
               }}
@@ -168,9 +185,9 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit}>
-            {/* Step 1: Select Category */}
-            <div style={{ marginBottom: '20px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* Step 1: Absence Details */}
+            <div>
               <label style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -182,58 +199,53 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
                 marginBottom: '10px',
                 color: 'var(--accent-primary, #3b82f6)'
               }}>
-                <Sparkles size={14} /> 1. Select Document Category
+                <Calendar size={14} /> 1. Absence Details &amp; Target Course
               </label>
 
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '10px'
-              }}>
-                {CATEGORIES.map(cat => {
-                  const IconComp = cat.icon;
-                  const isSelected = docType === cat.id;
-                  return (
-                    <div
-                      key={cat.id}
-                      onClick={() => !isUploading && setDocType(cat.id)}
-                      style={{
-                        padding: '12px',
-                        borderRadius: '14px',
-                        cursor: isUploading ? 'not-allowed' : 'pointer',
-                        border: isSelected ? '1px solid var(--accent-primary, #3b82f6)' : '1px solid rgba(255, 255, 255, 0.07)',
-                        background: isSelected ? 'rgba(59, 130, 246, 0.12)' : 'rgba(0, 0, 0, 0.25)',
-                        transition: 'all 0.2s ease',
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '10px'
-                      }}
-                    >
-                      <div style={{
-                        padding: '6px',
-                        borderRadius: '8px',
-                        background: isSelected ? 'var(--accent-primary, #3b82f6)' : 'rgba(255, 255, 255, 0.05)',
-                        color: isSelected ? '#ffffff' : '#94a3b8',
-                        marginTop: '2px'
-                      }}>
-                        <IconComp size={16} />
-                      </div>
-                      <div>
-                        <div style={{ fontSize: '13px', fontWeight: '700', color: isSelected ? '#ffffff' : '#e2e8f0' }}>
-                          {cat.label}
-                        </div>
-                        <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-                          {cat.desc}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '4px', color: 'var(--text-muted)' }}>
+                    Date of Absence
+                  </label>
+                  <input
+                    type="date"
+                    value={reqDate}
+                    onChange={(e) => setReqDate(e.target.value)}
+                    className="form-control"
+                    required
+                    disabled={isUploading}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', marginBottom: '4px', color: 'var(--text-muted)' }}>
+                    Target Course / Subject
+                  </label>
+                  <select
+                    value={reqSubject}
+                    onChange={(e) => setReqSubject(e.target.value)}
+                    className="form-control"
+                    disabled={isUploading}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px' }}
+                  >
+                    {subjects.length > 0 ? (
+                      subjects.map(s => <option key={s.id} value={s.id}>{s.name} ({s.code || s.id})</option>)
+                    ) : (
+                      <>
+                        <option value="CS301">Data Structures &amp; Algorithms</option>
+                        <option value="CS302">Database Systems</option>
+                        <option value="CS303">Computer Networks</option>
+                        <option value="MATH301">Linear Algebra</option>
+                      </>
+                    )}
+                  </select>
+                </div>
               </div>
             </div>
 
-            {/* Step 2: Upload & Live Preview Zone */}
-            <div style={{ marginBottom: '22px' }}>
+            {/* Step 2: Select Document Category */}
+            <div>
               <label style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -245,7 +257,93 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
                 marginBottom: '10px',
                 color: 'var(--accent-secondary, #8b5cf6)'
               }}>
-                <Upload size={14} /> 2. Attach Official File
+                <Sparkles size={14} /> 2. Document Category
+              </label>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                {CATEGORIES.map(cat => {
+                  const IconComp = cat.icon;
+                  const isSelected = docType === cat.id;
+                  return (
+                    <div
+                      key={cat.id}
+                      onClick={() => !isUploading && setDocType(cat.id)}
+                      style={{
+                        padding: '12px',
+                        borderRadius: '14px',
+                        cursor: isUploading ? 'not-allowed' : 'pointer',
+                        border: isSelected ? '1px solid var(--accent-primary, #3b82f6)' : '1px solid var(--panel-border)',
+                        background: isSelected ? 'rgba(59, 130, 246, 0.12)' : 'rgba(0, 0, 0, 0.2)',
+                        transition: 'all 0.2s ease',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '10px'
+                      }}
+                    >
+                      <div style={{
+                        padding: '6px',
+                        borderRadius: '8px',
+                        background: isSelected ? 'var(--accent-primary, #3b82f6)' : 'rgba(255, 255, 255, 0.05)',
+                        color: isSelected ? '#ffffff' : 'var(--text-muted)',
+                        marginTop: '2px'
+                      }}>
+                        <IconComp size={16} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text-main)' }}>
+                          {cat.label}
+                        </div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                          {cat.desc}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Step 3: Reason / Medical Diagnosis */}
+            <div>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                fontWeight: '700',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                marginBottom: '6px',
+                color: 'var(--text-muted)'
+              }}>
+                <Info size={14} /> 3. Reason / Diagnosis Summary
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Viral Fever & Medical Rest / Hackathon Participation"
+                value={reqReason}
+                onChange={(e) => setReqReason(e.target.value)}
+                className="form-control"
+                required
+                disabled={isUploading}
+                style={{ width: '100%', padding: '10px 14px', borderRadius: '10px' }}
+              />
+            </div>
+
+            {/* Step 4: File Upload & Live Preview */}
+            <div>
+              <label style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                fontSize: '12px',
+                fontWeight: '700',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                marginBottom: '10px',
+                color: 'var(--status-safe, #10b981)'
+              }}>
+                <Upload size={14} /> 4. Attach Proof Document (Your Own File)
               </label>
 
               <input
@@ -262,15 +360,14 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
               />
 
               {!selectedFile ? (
-                /* Empty Drag and Drop State */
                 <div
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
                   style={{
-                    border: `2px dashed ${dragActive ? 'var(--accent-primary, #3b82f6)' : 'rgba(255, 255, 255, 0.12)'}`,
-                    background: dragActive ? 'rgba(59, 130, 246, 0.08)' : 'rgba(0, 0, 0, 0.25)',
+                    border: `2px dashed ${dragActive ? 'var(--accent-primary, #3b82f6)' : 'var(--panel-border)'}`,
+                    background: dragActive ? 'rgba(59, 130, 246, 0.08)' : 'rgba(0, 0, 0, 0.2)',
                     borderRadius: '16px',
                     padding: '24px 16px',
                     textAlign: 'center',
@@ -282,7 +379,7 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
                     width: '48px',
                     height: '48px',
                     borderRadius: '50%',
-                    background: 'rgba(59, 130, 246, 0.1)',
+                    background: 'rgba(59, 130, 246, 0.12)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -291,18 +388,17 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
                   }}>
                     <Upload size={22} />
                   </div>
-                  <p style={{ fontSize: '14px', fontWeight: '700', margin: '0 0 4px', color: '#f8fafc' }}>
-                    Click to browse or Drag &amp; Drop file here
+                  <p style={{ fontSize: '14px', fontWeight: '700', margin: '0 0 4px', color: 'var(--text-main)' }}>
+                    Click to browse your device or Drag &amp; Drop file here
                   </p>
-                  <p style={{ fontSize: '12px', color: '#94a3b8', margin: '0 0 10px' }}>
-                    Supports PDF, PNG, JPG (Maximum 5MB)
+                  <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '0 0 10px' }}>
+                    Upload your official PDF, PNG, or JPG certificate (Max 5MB)
                   </p>
                   <span className="status-badge info" style={{ fontSize: '11px' }}>
-                    <ShieldCheck size={12} /> Encrypted Vault Storage
+                    <ShieldCheck size={12} /> Encrypted Vault Upload
                   </span>
                 </div>
               ) : (
-                /* Selected File Card with Live Preview */
                 <div style={{
                   padding: '16px',
                   borderRadius: '16px',
@@ -338,14 +434,14 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
                       <span className="status-badge safe" style={{ fontSize: '10px', padding: '2px 8px' }}>
-                        <CheckCircle2 size={11} /> File Attached
+                        <CheckCircle2 size={11} /> Ready to Submit
                       </span>
                     </div>
-                    <h4 style={{ fontSize: '13px', fontWeight: '700', margin: 0, color: '#f8fafc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <h4 style={{ fontSize: '13px', fontWeight: '700', margin: 0, color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {selectedFile.name}
                     </h4>
-                    <p style={{ fontSize: '11px', color: '#94a3b8', margin: '2px 0 0' }}>
-                      {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • {selectedFile.type || 'Document'}
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: '2px 0 0' }}>
+                      {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • Verified File Format
                     </p>
                   </div>
 
@@ -372,12 +468,12 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
               )}
             </div>
 
-            {/* Upload Progress Indicator */}
+            {/* Upload Progress Bar */}
             {isUploading && (
-              <div style={{ marginBottom: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px', color: '#94a3b8' }}>
-                  <span>Uploading to Admin Inspector...</span>
-                  <span style={{ fontWeight: '700', color: 'var(--accent-primary, #3b82f6)' }}>{uploadProgress}%</span>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)' }}>
+                  <span>Submitting to Admin Verification Inbox...</span>
+                  <span style={{ fontWeight: '700', color: 'var(--accent-primary)' }}>{uploadProgress}%</span>
                 </div>
                 <div style={{ width: '100%', height: '6px', background: 'rgba(255, 255, 255, 0.08)', borderRadius: '4px', overflow: 'hidden' }}>
                   <div style={{ width: `${uploadProgress}%`, height: '100%', background: 'var(--accent-gradient)', transition: 'width 0.2s ease' }} />
@@ -385,8 +481,8 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
               </div>
             )}
 
-            {/* Footer Actions */}
-            <div style={{ display: 'flex', gap: '12px' }}>
+            {/* Footer Action Buttons */}
+            <div style={{ display: 'flex', gap: '12px', paddingTop: '4px' }}>
               <button
                 type="button"
                 onClick={() => { if (!isUploading) onClose(); }}
@@ -409,7 +505,7 @@ const DocumentUploadModal = ({ isOpen, onClose, onSubmitDoc }) => {
                 }}
                 disabled={!selectedFile || isUploading}
               >
-                {isUploading ? 'Submitting File...' : 'Submit for Admin Review'}
+                {isUploading ? 'Submitting Application...' : 'Submit Document for Clearance'}
               </button>
             </div>
           </form>
