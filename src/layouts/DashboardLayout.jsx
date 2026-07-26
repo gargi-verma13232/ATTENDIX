@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../components/Sidebar';
 import { useMockData } from '../MockDataContext';
 import { Menu, Sun, Moon, GraduationCap, ClipboardCheck, Shield } from 'lucide-react';
@@ -7,6 +8,7 @@ import { Menu, Sun, Moon, GraduationCap, ClipboardCheck, Shield } from 'lucide-r
 const DashboardLayout = () => {
   const { currentUser, login, isMobileNavOpen, setIsMobileNavOpen, setActiveSection } = useMockData();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [isLightMode, setIsLightMode] = useState(() => {
     return localStorage.getItem('theme') === 'light';
@@ -40,7 +42,7 @@ const DashboardLayout = () => {
 
   const getPageTitle = () => {
     const role = currentUser?.role;
-    if (role === 'student') return 'Student Dashboard';
+    if (role === 'student') return 'Student Portal';
     if (role === 'faculty') return 'Faculty Portal';
     if (role === 'admin') return 'Institutional Admin Portal';
     return 'Attendix';
@@ -70,12 +72,35 @@ const DashboardLayout = () => {
           )}
         </div>
 
+        {/* Top Navbar Role Testing Switcher */}
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div className="role-switcher-container">
+            <button
+              onClick={() => handleRoleSwitch('student')}
+              className={`role-switch-btn ${currentUser?.role === 'student' ? 'active' : ''}`}
+            >
+              <GraduationCap size={14} /> Student
+            </button>
+            <button
+              onClick={() => handleRoleSwitch('faculty')}
+              className={`role-switch-btn ${currentUser?.role === 'faculty' ? 'active' : ''}`}
+            >
+              <ClipboardCheck size={14} /> Teacher
+            </button>
+            <button
+              onClick={() => handleRoleSwitch('admin')}
+              className={`role-switch-btn ${currentUser?.role === 'admin' ? 'active' : ''}`}
+            >
+              <Shield size={14} /> Admin
+            </button>
+          </div>
+
           {currentUser && (
             <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-muted)' }}>
               {currentUser.name}
             </span>
           )}
+
           {/* Theme Toggle */}
           <button
             onClick={() => setIsLightMode(!isLightMode)}
@@ -97,7 +122,17 @@ const DashboardLayout = () => {
 
       <Sidebar />
       <main className="main-content">
-        <Outlet />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
       </main>
     </div>
   );

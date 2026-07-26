@@ -78,6 +78,7 @@ p {
   font-weight: 800;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 40px;
   display: flex;
@@ -255,6 +256,7 @@ p {
   font-weight: 700;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -533,6 +535,7 @@ body.light-theme .hamburger-btn:hover {
   font-weight: 800;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-flex;
   align-items: center;
@@ -829,6 +832,7 @@ body.light-theme .hamburger-btn:hover {
   font-weight: 800;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -1628,3 +1632,63 @@ body.light-theme .role-switcher-container {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* Radar & Pulse Animations for QR Generator & Scanner */
+.radar-pulse-ring {
+  position: absolute;
+  inset: -12px;
+  border-radius: 24px;
+  border: 2px solid var(--accent-primary);
+  opacity: 0;
+  animation: radar-pulse-expand 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+  pointer-events: none;
+}
+
+.radar-pulse-ring-delayed {
+  animation-delay: 1s;
+}
+
+@keyframes radar-pulse-expand {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+
+/* WebAuthn Fingerprint Scanning Animation */
+.fingerprint-scan-line {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #10B981, #3B82F6, transparent);
+  box-shadow: 0 0 12px #10B981, 0 0 20px #3B82F6;
+  border-radius: 2px;
+  animation: fingerprint-sweep 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes fingerprint-sweep {
+  0% { top: 15%; opacity: 0.7; }
+  100% { top: 80%; opacity: 1; }
+}
+
+.fingerprint-glow-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+  animation: fingerprint-pulse-bg 2s ease-in-out infinite alternate;
+}
+
+@keyframes fingerprint-pulse-bg {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(1.08); opacity: 1; }
+}
+

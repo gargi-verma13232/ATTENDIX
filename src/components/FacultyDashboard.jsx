@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useMockData } from '../MockDataContext';
 import {
   UserCheck,
@@ -16,11 +17,11 @@ import {
   Check,
   X,
   RefreshCw,
-  ExternalLink,
   BookOpen,
   Image as ImageIcon,
-  Compass,
   ArrowRight,
+  Sparkles,
+  Users
 } from 'lucide-react';
 
 const FacultyDashboard = () => {
@@ -45,23 +46,23 @@ const FacultyDashboard = () => {
     notices,
     liveScanCount,
     scannedStudentsList,
-    cancelClassSession,
-    createRecoveryClass,
+    campusConfig,
   } = useMockData();
 
-  // QR Modal state
+  // QR Generator state & Section picker
   const [showQrModal, setShowQrModal] = useState(false);
+  const [selectedSection, setSelectedSection] = useState('Section A');
   const [qrToken, setQrToken] = useState('ATTX-LIVE-A9K2-8871');
-  const [qrCountdown, setQrCountdown] = useState(10);
+  const [qrCountdown, setQrCountdown] = useState(30);
 
-  // Catch-up notes form state
+  // Catch-up notes state
   const currentNotes = getSessionNotes(selectedCourse, selectedDate, selectedSlot);
   const [summaryInput, setSummaryInput] = useState(currentNotes.summary || '');
   const [homeworkInput, setHomeworkInput] = useState(currentNotes.homework || '');
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
   const [saveMessage, setSaveMessage] = useState('');
 
-  // Synchronize local note state when selected session changes
+  // Synchronize local notes state when selected session changes
   useEffect(() => {
     const notes = getSessionNotes(selectedCourse, selectedDate, selectedSlot);
     setSummaryInput(notes.summary || '');
@@ -69,18 +70,17 @@ const FacultyDashboard = () => {
     setSaveMessage('');
   }, [selectedCourse, selectedDate, selectedSlot]);
 
-  // Rotating QR Code effect (every 10 seconds)
+  // 30-Second Auto-Refreshing Live QR Token Effect
   useEffect(() => {
     if (!showQrModal) return;
 
     const interval = setInterval(() => {
       setQrCountdown(prev => {
         if (prev <= 1) {
-          // Rotate token
           const randomHash = Math.random().toString(36).substring(2, 6).toUpperCase();
           const randomNum = Math.floor(1000 + Math.random() * 9000);
           setQrToken(`ATTX-LIVE-${randomHash}-${randomNum}`);
-          return 10;
+          return 30;
         }
         return prev - 1;
       });
@@ -89,14 +89,13 @@ const FacultyDashboard = () => {
     return () => clearInterval(interval);
   }, [showQrModal]);
 
-  // Roster for currently selected session
+  // Session roster & attendance stats
   const currentRoster = getSessionRoster(selectedCourse, selectedDate, selectedSlot);
   const totalStudents = currentRoster.length;
   const presentStudents = currentRoster.filter(s => s.status === 'present').length;
   const absentStudents = totalStudents - presentStudents;
   const attendancePercent = totalStudents > 0 ? Math.round((presentStudents / totalStudents) * 100) : 0;
 
-  // Save session catch-up notes
   const handleSaveNotes = (e) => {
     e.preventDefault();
     updateSessionNotes(selectedCourse, selectedDate, selectedSlot, {
@@ -108,12 +107,10 @@ const FacultyDashboard = () => {
     setTimeout(() => setSaveMessage(''), 4000);
   };
 
-  // Simulate uploading board work photo
   const handleAddPhoto = () => {
     const samplePhotos = [
       'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80',
     ];
     const photoToAdd = newPhotoUrl.trim() || samplePhotos[Math.floor(Math.random() * samplePhotos.length)];
     addPhotoToSession(selectedCourse, selectedDate, selectedSlot, photoToAdd);
@@ -122,7 +119,6 @@ const FacultyDashboard = () => {
     setTimeout(() => setSaveMessage(''), 3000);
   };
 
-  // Generate deterministic SVG matrix for QR visual representation
   const generateSvgQrCells = (token) => {
     const gridSize = 11;
     const cells = [];
@@ -132,7 +128,6 @@ const FacultyDashboard = () => {
       hashVal |= 0;
     }
 
-    // Always draw corner finder patterns
     const isFinderPattern = (r, c) => {
       const topL = r < 3 && c < 3;
       const topR = r < 3 && c > gridSize - 4;
@@ -157,7 +152,7 @@ const FacultyDashboard = () => {
 
   return (
     <div className="dashboard-content">
-      {/* 1. Professor Header & Daily Teaching Schedule */}
+      {/* 1. Header & Quick Launch QR Generator */}
       <div className="page-header" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
@@ -170,31 +165,35 @@ const FacultyDashboard = () => {
             {facultyProfile.name} • {facultyProfile.title} ({facultyProfile.department})
           </p>
           <p style={{ fontSize: '13px', color: 'var(--accent-primary)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <MapPin size={14} /> Cabin Location: {facultyProfile.cabinOfficeLocation}
+            <MapPin size={14} /> Cabin Office: {facultyProfile.cabinOfficeLocation}
           </p>
         </div>
 
-        <button
+        <motion.button
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.96 }}
           onClick={() => setShowQrModal(true)}
           className="btn btn-primary"
           style={{ padding: '12px 24px', fontSize: '15px' }}
         >
-          <QrCode size={20} /> Generate Live QR Code
-        </button>
+          <QrCode size={20} /> Launch 30s Live Dynamic QR
+        </motion.button>
       </div>
 
       <div className="dashboard-grid">
-        {/* Daily Teaching Schedule & Active Lecture Slots */}
+        {/* Today's Teaching Schedule */}
         <div className="glass-panel col-span-12">
           <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontSize: '18px' }}>
-            <Calendar className="text-blue-500" /> Today&apos;s Teaching Schedule & Room Assignments
+            <Calendar className="text-blue-500" /> Today&apos;s Lecture Schedule &amp; Room Assignments
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
             {facultySchedule.map((slot) => {
               const isCurrentSelected = selectedSlot === slot.id && selectedCourse === slot.courseId;
               return (
-                <div
+                <motion.div
                   key={slot.id}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     setSelectedCourse(slot.courseId);
                     setSelectedSlot(slot.id);
@@ -217,11 +216,11 @@ const FacultyDashboard = () => {
                     </div>
                     {slot.active && (
                       <span className="status-badge safe" style={{ fontSize: '11px', padding: '3px 8px' }}>
-                        Live Now
+                        ● Live Lecture
                       </span>
                     )}
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-muted)', marginTop: '12px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-muted)', marginTop: '12px', borderTop: '1px solid var(--panel-border)', paddingTop: '8px' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <Clock size={14} /> {slot.slotTime}
                     </span>
@@ -229,21 +228,21 @@ const FacultyDashboard = () => {
                       <MapPin size={14} /> {slot.room}
                     </span>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
         </div>
 
-        {/* 2. Interactive Session Logger & Student Roster */}
+        {/* 2. Interactive Manual Override Roster Table */}
         <div className="glass-panel col-span-7">
           <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '12px' }}>
             <div>
               <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px' }}>
-                <UserCheck className="text-blue-500" /> Interactive Session Logger
+                <UserCheck className="text-blue-500" /> Manual Override Attendance Register
               </h2>
               <p style={{ fontSize: '13px', marginTop: '4px' }}>
-                Click on any student card/row to toggle Present (✔) or Absent (✖) during class.
+                Select session details and manually override attendance status in real time.
               </p>
             </div>
 
@@ -252,24 +251,38 @@ const FacultyDashboard = () => {
               <select
                 value={selectedCourse}
                 onChange={(e) => setSelectedCourse(e.target.value)}
-                style={{ padding: '8px 12px', borderRadius: '8px', background: '#111827', color: 'white', border: '1px solid var(--panel-border)', fontSize: '13px' }}
+                className="form-control"
+                style={{ width: 'auto', minHeight: '38px', padding: '6px 10px', fontSize: '12px' }}
               >
                 <option value="cs-301">CS301 - Data Structures</option>
                 <option value="cs-302">CS302 - Database Systems</option>
                 <option value="cs-303">CS303 - Computer Networks</option>
               </select>
 
+              <select
+                value={selectedSection}
+                onChange={(e) => setSelectedSection(e.target.value)}
+                className="form-control"
+                style={{ width: 'auto', minHeight: '38px', padding: '6px 10px', fontSize: '12px' }}
+              >
+                <option value="Section A">Section A</option>
+                <option value="Section B">Section B</option>
+                <option value="Section C">Section C</option>
+              </select>
+
               <input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                style={{ padding: '8px 12px', borderRadius: '8px', background: '#111827', color: 'white', border: '1px solid var(--panel-border)', fontSize: '13px' }}
+                className="form-control"
+                style={{ width: 'auto', minHeight: '38px', padding: '6px 10px', fontSize: '12px' }}
               />
 
               <select
                 value={selectedSlot}
                 onChange={(e) => setSelectedSlot(e.target.value)}
-                style={{ padding: '8px 12px', borderRadius: '8px', background: '#111827', color: 'white', border: '1px solid var(--panel-border)', fontSize: '13px' }}
+                className="form-control"
+                style={{ width: 'auto', minHeight: '38px', padding: '6px 10px', fontSize: '12px' }}
               >
                 <option value="slot-1">Slot 1 (09:00 AM)</option>
                 <option value="slot-2">Slot 2 (10:30 AM)</option>
@@ -278,45 +291,45 @@ const FacultyDashboard = () => {
             </div>
           </div>
 
-          {/* Quick Roster Stats Bar */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px', background: 'rgba(0,0,0,0.25)', padding: '12px 16px', borderRadius: '12px' }}>
-            <div>
-              <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Total Students</div>
-              <div style={{ fontSize: '20px', fontWeight: '700', marginTop: '2px' }}>{totalStudents}</div>
+          {/* Attendance Overview Progress Bar */}
+          <div style={{ background: 'rgba(0,0,0,0.15)', padding: '14px 18px', borderRadius: '14px', marginBottom: '20px', border: '1px solid var(--panel-border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span style={{ fontSize: '13px', fontWeight: '600' }}>Overall Attendance Ratio ({selectedCourse.toUpperCase()})</span>
+              <span style={{ fontSize: '16px', fontWeight: '800', color: attendancePercent >= 75 ? 'var(--status-safe)' : 'var(--status-critical)' }}>
+                {presentStudents} / {totalStudents} ({attendancePercent}%)
+              </span>
             </div>
-            <div>
-              <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--status-safe)' }}>Present</div>
-              <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--status-safe)', marginTop: '2px' }}>{presentStudents}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--status-critical)' }}>Absent</div>
-              <div style={{ fontSize: '20px', fontWeight: '700', color: 'var(--status-critical)', marginTop: '2px' }}>{absentStudents}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Attendance %</div>
-              <div style={{ fontSize: '20px', fontWeight: '700', color: attendancePercent >= 75 ? 'var(--status-safe)' : 'var(--status-critical)', marginTop: '2px' }}>
-                {attendancePercent}%
-              </div>
+
+            <div className="progress-container" style={{ height: '8px' }}>
+              <motion.div
+                className="progress-bar"
+                initial={{ width: 0 }}
+                animate={{ width: `${attendancePercent}%` }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+                style={{
+                  backgroundColor: attendancePercent >= 75 ? 'var(--status-safe)' : 'var(--status-critical)',
+                }}
+              />
             </div>
           </div>
 
-          {/* Roster List */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '460px', overflowY: 'auto', paddingRight: '4px' }}>
+          {/* Roster Override Table */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '440px', overflowY: 'auto', paddingRight: '4px' }}>
             {currentRoster.map((student) => {
               const isPresent = student.status === 'present';
               return (
-                <div
+                <motion.div
                   key={student.id}
+                  whileHover={{ x: 2 }}
                   onClick={() => toggleStudentAttendance(selectedCourse, selectedDate, selectedSlot, student.id)}
-                  className="roster-row"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     padding: '12px 16px',
                     borderRadius: '12px',
-                    background: isPresent ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)',
-                    border: isPresent ? '1px solid rgba(16, 185, 129, 0.25)' : '1px solid rgba(239, 68, 68, 0.25)',
+                    background: isPresent ? 'var(--status-safe-bg)' : 'var(--status-critical-bg)',
+                    border: isPresent ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
                   }}
@@ -340,7 +353,7 @@ const FacultyDashboard = () => {
                     </div>
                     <div>
                       <div style={{ fontWeight: '600', fontSize: '15px' }}>{student.name}</div>
-                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{student.rollNo}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{student.rollNo} • {selectedSection}</div>
                     </div>
                   </div>
 
@@ -351,7 +364,7 @@ const FacultyDashboard = () => {
                     >
                       {isPresent ? (
                         <>
-                          <CheckCircle2 size={16} /> ✔ Present
+                          <CheckCircle2 size={16} /> ✔ Attended
                         </>
                       ) : (
                         <>
@@ -360,87 +373,54 @@ const FacultyDashboard = () => {
                       )}
                     </span>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
         </div>
 
-        {/* 6. Class Recovery Hub (Faculty Side: Catch-Up Notes & Photo Uploads) */}
+        {/* 3. Class Catch-Up Notes & Photo Gallery */}
         <div className="glass-panel col-span-5">
           <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', marginBottom: '8px' }}>
-            <BookOpen className="text-blue-500" /> Class Recovery Hub (Faculty Logger)
+            <BookOpen className="text-blue-500" /> Class Catch-Up Notes &amp; Slides
           </h2>
           <p style={{ fontSize: '13px', marginBottom: '16px' }}>
-            Add lecture summary, homework, and slide/board photos. Students who are absent can access these in their Catch-Up modal.
+            Publish notes, assigned homework, and board work photos for absent students.
           </p>
 
           <form onSubmit={handleSaveNotes} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '12px', textTransform: 'uppercase', marginBottom: '6px', fontWeight: '600', color: 'var(--text-muted)' }}>
-                Lecture Summary & Key Concepts
-              </label>
+              <label className="field-label">Lecture Summary &amp; Key Concepts</label>
               <textarea
                 rows={3}
                 value={summaryInput}
                 onChange={(e) => setSummaryInput(e.target.value)}
                 placeholder="e.g. Covered AVL tree LL/RR rotations and insertion step-by-step..."
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--panel-border)',
-                  background: 'rgba(0,0,0,0.25)',
-                  color: 'white',
-                  fontFamily: 'inherit',
-                  fontSize: '13px',
-                }}
+                className="form-control"
               />
             </div>
 
             <div>
-              <label style={{ display: 'block', fontSize: '12px', textTransform: 'uppercase', marginBottom: '6px', fontWeight: '600', color: 'var(--text-muted)' }}>
-                Homework & Assignment Assigned
-              </label>
+              <label className="field-label">Homework Assigned</label>
               <textarea
                 rows={2}
                 value={homeworkInput}
                 onChange={(e) => setHomeworkInput(e.target.value)}
                 placeholder="e.g. Solve questions 1 to 5 from Exercise 4.2 in workbook..."
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  borderRadius: '10px',
-                  border: '1px solid var(--panel-border)',
-                  background: 'rgba(0,0,0,0.25)',
-                  color: 'white',
-                  fontFamily: 'inherit',
-                  fontSize: '13px',
-                }}
+                className="form-control"
               />
             </div>
 
-            {/* Board Work / Slide Photos Upload Section */}
             <div>
-              <label style={{ display: 'block', fontSize: '12px', textTransform: 'uppercase', marginBottom: '6px', fontWeight: '600', color: 'var(--text-muted)' }}>
-                Board Work / Slide Photos Gallery ({currentNotes.photos ? currentNotes.photos.length : 0} uploaded)
-              </label>
-
+              <label className="field-label">Board Work / Slide Photos ({currentNotes.photos ? currentNotes.photos.length : 0} uploaded)</label>
               <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                 <input
                   type="text"
                   value={newPhotoUrl}
                   onChange={(e) => setNewPhotoUrl(e.target.value)}
-                  placeholder="Paste image URL or leave blank for sample photo..."
-                  style={{
-                    flex: 1,
-                    padding: '8px 12px',
-                    borderRadius: '8px',
-                    border: '1px solid var(--panel-border)',
-                    background: 'rgba(0,0,0,0.25)',
-                    color: 'white',
-                    fontSize: '12px',
-                  }}
+                  placeholder="Paste image URL..."
+                  className="form-control"
+                  style={{ flex: 1 }}
                 />
                 <button
                   type="button"
@@ -452,323 +432,237 @@ const FacultyDashboard = () => {
                 </button>
               </div>
 
-              {/* Photo Mini Gallery Preview */}
               {currentNotes.photos && currentNotes.photos.length > 0 ? (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                   {currentNotes.photos.map((photo, i) => (
                     <div key={i} style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', height: '64px', border: '1px solid var(--panel-border)' }}>
                       <img src={photo} alt="Board Note" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <span style={{ position: 'absolute', bottom: '2px', left: '4px', fontSize: '10px', background: 'rgba(0,0,0,0.7)', padding: '1px 5px', borderRadius: '4px' }}>
-                        Note {i + 1}
-                      </span>
                     </div>
                   ))}
                 </div>
               ) : (
                 <div style={{ textAlign: 'center', padding: '16px', border: '1px dashed var(--panel-border)', borderRadius: '8px', color: 'var(--text-muted)', fontSize: '12px' }}>
                   <ImageIcon size={20} style={{ margin: '0 auto 6px', opacity: 0.5 }} />
-                  No board work photos added yet for this class session.
+                  No board work photos added yet for this session.
                 </div>
               )}
             </div>
 
             {saveMessage && (
-              <div style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid var(--status-safe)', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', color: 'var(--status-safe)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div className="alert-success">
                 <CheckCircle2 size={16} /> {saveMessage}
               </div>
             )}
 
-            <button type="submit" className="btn btn-primary" style={{ marginTop: '8px' }}>
-              <Send size={16} /> Save Session Catch-Up Notes
+            <button type="submit" className="btn btn-primary">
+              <Send size={16} /> Publish Session Notes
             </button>
           </form>
         </div>
 
-        {/* 4. Resolution Inbox & Auto-Register Jump */}
+        {/* 4. Resolution Inbox */}
         <div className="glass-panel col-span-7">
           <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', marginBottom: '8px' }}>
-            <FileText className="text-purple-500" /> Resolution Inbox (OD & Medical Applications)
+            <FileText className="text-purple-500" /> Resolution Inbox (OD &amp; Medical Applications)
           </h2>
-          <p style={{ fontSize: '13px', marginBottom: '16px' }}>
-            Review pending student applications. Use the &quot;📍 Jump to Class Register&quot; button to jump to that date/slot&apos;s session logger and edit attendance immediately.
-          </p>
-
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {odRequests.map((req) => (
-              <div
-                key={req.id}
-                style={{
-                  background: 'rgba(0,0,0,0.2)',
-                  border: '1px solid var(--panel-border)',
-                  borderRadius: '12px',
-                  padding: '16px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '12px',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '8px' }}>
+              <div key={req.id} className="panel-inset" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontWeight: '700', fontSize: '15px' }}>{req.studentName}</span>
-                      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>({req.rollNo})</span>
-                      <span className={`status-badge ${req.type === 'OD' ? 'safe' : 'warning'}`} style={{ fontSize: '11px', padding: '2px 8px' }}>
-                        {req.type}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '13px', color: 'var(--text-main)', marginTop: '4px', fontWeight: '500' }}>
-                      {req.courseName} • {req.date} ({req.slotTime})
-                    </div>
+                    <span style={{ fontWeight: '700', fontSize: '15px' }}>{req.studentName}</span>
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginLeft: '6px' }}>({req.rollNo})</span>
                   </div>
-
-                  {/* Status badge or Approve/Reject controls */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {req.status === 'pending' ? (
-                      <>
-                        <button
-                          onClick={() => updateRequestStatus(req.id, 'approved')}
-                          className="btn"
-                          style={{ background: 'var(--status-safe-bg)', color: 'var(--status-safe)', border: '1px solid var(--status-safe)', padding: '6px 12px', fontSize: '12px' }}
-                        >
-                          <Check size={14} /> Approve
-                        </button>
-                        <button
-                          onClick={() => updateRequestStatus(req.id, 'rejected')}
-                          className="btn"
-                          style={{ background: 'var(--status-critical-bg)', color: 'var(--status-critical)', border: '1px solid var(--status-critical)', padding: '6px 12px', fontSize: '12px' }}
-                        >
-                          <X size={14} /> Reject
-                        </button>
-                      </>
-                    ) : (
-                      <span className={`status-badge ${req.status === 'approved' ? 'safe' : 'critical'}`} style={{ textTransform: 'capitalize' }}>
-                        {req.status === 'approved' ? '✔ Approved' : '✖ Rejected'}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Reason & Document */}
-                <div style={{ fontSize: '13px', background: 'rgba(255,255,255,0.03)', padding: '10px 12px', borderRadius: '8px', borderLeft: '3px solid var(--accent-primary)' }}>
-                  <strong>Reason:</strong> {req.reason}
-                  {req.documentUrl && (
-                    <div style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--accent-primary)' }}>
-                      <FileText size={13} /> Document Attached: <u>{req.documentUrl}</u>
+                  {req.status === 'pending' ? (
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button onClick={() => updateRequestStatus(req.id, 'approved')} className="btn" style={{ background: 'var(--status-safe-bg)', color: 'var(--status-safe)', border: '1px solid var(--status-safe)', padding: '4px 10px', fontSize: '12px' }}>
+                        <Check size={14} /> Approve
+                      </button>
+                      <button onClick={() => updateRequestStatus(req.id, 'rejected')} className="btn" style={{ background: 'var(--status-critical-bg)', color: 'var(--status-critical)', border: '1px solid var(--status-critical)', padding: '4px 10px', fontSize: '12px' }}>
+                        <X size={14} /> Reject
+                      </button>
                     </div>
+                  ) : (
+                    <span className={`status-badge ${req.status === 'approved' ? 'safe' : 'critical'}`}>
+                      {req.status === 'approved' ? '✔ Approved' : '✖ Rejected'}
+                    </span>
                   )}
                 </div>
-
-                {/* 📍 JUMP TO CLASS REGISTER BUTTON */}
-                <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '10px' }}>
-                  <button
-                    onClick={() => {
-                      jumpToClassRegister(req.courseId, req.date, req.slotId);
-                      window.scrollTo({ top: 180, behavior: 'smooth' });
-                    }}
-                    className="btn btn-secondary"
-                    style={{ fontSize: '13px', background: 'rgba(59, 130, 246, 0.15)', color: 'var(--text-main)', border: '1px solid rgba(59, 130, 246, 0.4)' }}
-                  >
-                    📍 Jump to Class Register ({req.date} • {req.slotId})
-                    <ArrowRight size={14} />
-                  </button>
-                </div>
+                <div style={{ fontSize: '13px' }}><strong>Reason:</strong> {req.reason}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* 5. Institutional Notice Center */}
+        {/* 5. Notice Center */}
         <div className="glass-panel col-span-5">
           <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '18px', marginBottom: '8px' }}>
             <Bell className="text-yellow-500" /> Institutional Notice Center
           </h2>
-          <p style={{ fontSize: '13px', marginBottom: '16px' }}>
-            Department meetings, exam duty schedules, and academic deadlines.
-          </p>
-
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {notices.map((notice) => (
-              <div
-                key={notice.id}
-                style={{
-                  background: 'rgba(0,0,0,0.2)',
-                  border: '1px solid var(--panel-border)',
-                  borderRadius: '12px',
-                  padding: '14px',
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                  <span className={`status-badge ${notice.priority === 'High' ? 'critical' : 'warning'}`} style={{ fontSize: '11px', padding: '2px 8px' }}>
-                    {notice.category} • {notice.priority} Priority
-                  </span>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{notice.date}</span>
+              <div key={notice.id} className="panel-inset">
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                  <span className="status-badge warning">{notice.category}</span>
+                  <span style={{ color: 'var(--text-muted)' }}>{notice.date}</span>
                 </div>
-                <h4 style={{ fontSize: '15px', marginBottom: '6px', fontWeight: '600', color: 'var(--text-main)' }}>{notice.title}</h4>
-                <p style={{ fontSize: '13px', marginBottom: '8px', lineHeight: '1.4' }}>{notice.details}</p>
-                <div style={{ fontSize: '12px', color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <MapPin size={13} /> {notice.location} ({notice.time})
-                </div>
+                <h4 style={{ fontSize: '14px', margin: '4px 0' }}>{notice.title}</h4>
+                <p style={{ fontSize: '12px' }}>{notice.details}</p>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* 3. ROTATING DYNAMIC QR GENERATOR MODAL */}
-      {showQrModal && (
-        <div
-          className="modal-backdrop"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.85)',
-            backdropFilter: 'blur(10px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '24px',
-          }}
-        >
+      {/* 30-SECOND DYNAMIC QR GENERATOR MODAL */}
+      <AnimatePresence>
+        {showQrModal && (
           <div
-            className="glass-panel"
+            className="modal-backdrop"
             style={{
-              maxWidth: '480px',
-              width: '100%',
-              padding: '32px',
-              textAlign: 'center',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.75)',
-              position: 'relative',
-              borderRadius: '24px',
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0, 0, 0, 0.85)',
+              backdropFilter: 'blur(12px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              padding: '24px',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <span className="status-badge safe" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                <RefreshCw size={14} className="spin-slow" /> Live Anti-Proxy QR
-              </span>
-              <button
-                onClick={() => setShowQrModal(false)}
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+              className="glass-panel"
+              style={{
+                maxWidth: '480px',
+                width: '100%',
+                padding: '32px',
+                textAlign: 'center',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.75)',
+                position: 'relative',
+                borderRadius: '24px',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <span className="status-badge safe" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <RefreshCw size={14} className="spin-slow" /> 30s Live Anti-Proxy QR
+                </span>
+                <button
+                  onClick={() => setShowQrModal(false)}
+                  style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <h3 style={{ fontSize: '22px', marginBottom: '6px' }}>Session Dynamic Attendance QR</h3>
+              <p style={{ fontSize: '13px', marginBottom: '20px', color: 'var(--text-muted)' }}>
+                Generating for <strong>{selectedCourse.toUpperCase()} ({selectedSection})</strong>. QR code auto-refreshes every 30s with WebAuthn fingerprint lock.
+              </p>
+
+              {/* SVG QR Code Display with Radar Ring Animation */}
+              <div
+                style={{
+                  position: 'relative',
+                  width: '240px',
+                  height: '240px',
+                  margin: '0 auto 20px',
+                  background: '#ffffff',
+                  padding: '16px',
+                  borderRadius: '20px',
+                  boxShadow: '0 0 35px rgba(59, 130, 246, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
               >
-                <X size={24} />
-              </button>
-            </div>
-
-            <h3 style={{ fontSize: '22px', marginBottom: '6px' }}>Class Attendance Live QR</h3>
-            <p style={{ fontSize: '13px', marginBottom: '20px' }}>
-              Students must scan this QR code within 50m of campus. Token auto-refreshes every 10s to prevent proxy screenshots.
-            </p>
-
-            {/* SVG QR Code Display */}
-            <div
-              style={{
-                width: '240px',
-                height: '240px',
-                margin: '0 auto 20px',
-                background: '#ffffff',
-                padding: '16px',
-                borderRadius: '16px',
-                boxShadow: '0 0 30px rgba(59, 130, 246, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <svg width="200" height="200" viewBox="0 0 11 11">
-                {qrCells.map((c, i) =>
-                  c.active ? (
-                    <rect key={i} x={c.c} y={c.r} width="1" height="1" fill="#0B0E14" />
-                  ) : null
-                )}
-              </svg>
-            </div>
-
-            {/* Live Token Display */}
-            <div
-              style={{
-                fontFamily: 'monospace',
-                fontSize: '18px',
-                fontWeight: '700',
-                background: 'rgba(0, 0, 0, 0.4)',
-                padding: '10px 16px',
-                borderRadius: '10px',
-                border: '1px solid var(--panel-border)',
-                marginBottom: '16px',
-                letterSpacing: '2px',
-                color: 'var(--accent-primary)',
-              }}
-            >
-              {qrToken}
-            </div>
-
-            {/* REAL-TIME LIVE STUDENT SCAN COUNTER */}
-            <div
-              style={{
-                background: 'rgba(16, 185, 129, 0.1)',
-                border: '1px solid rgba(16, 185, 129, 0.3)',
-                borderRadius: '12px',
-                padding: '12px 16px',
-                marginBottom: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <div>
-                <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: '600' }}>
-                  Live Verified Student Scans
-                </span>
-                <div style={{ fontSize: '22px', fontWeight: '800', color: 'var(--status-safe)', margin: 0 }}>
-                  ⚡ {liveScanCount} Active Scans
-                </div>
+                <div className="radar-pulse-ring" />
+                <div className="radar-pulse-ring radar-pulse-ring-delayed" />
+                <svg width="200" height="200" viewBox="0 0 11 11">
+                  {qrCells.map((c, i) =>
+                    c.active ? (
+                      <rect key={i} x={c.c} y={c.r} width="1" height="1" fill="#0B0E14" />
+                    ) : null
+                  )}
+                </svg>
               </div>
-              <span className="status-badge safe" style={{ fontSize: '11px', animation: 'pulse 2s infinite' }}>
-                ● Live Sync Active
-              </span>
-            </div>
 
-            {/* Recent Live Scans Feed */}
-            {scannedStudentsList && scannedStudentsList.length > 0 && (
-              <div style={{ marginBottom: '16px', textAlign: 'left', background: 'rgba(0,0,0,0.3)', padding: '10px 14px', borderRadius: '10px', maxHeight: '100px', overflowY: 'auto' }}>
-                <div style={{ fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                  RECENT VERIFIED SCANS
-                </div>
-                {scannedStudentsList.slice(0, 3).map((s, idx) => (
-                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', padding: '3px 0', borderBottom: idx < 2 ? '1px dashed rgba(255,255,255,0.05)' : 'none' }}>
-                    <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>✔ {s.name} ({s.id})</span>
-                    <span style={{ color: 'var(--status-safe)', fontSize: '11px' }}>{s.time}</span>
+              {/* Token Hash Display */}
+              <div
+                style={{
+                  fontFamily: 'monospace',
+                  fontSize: '18px',
+                  fontWeight: '700',
+                  background: 'rgba(0, 0, 0, 0.4)',
+                  padding: '10px 16px',
+                  borderRadius: '10px',
+                  border: '1px solid var(--panel-border)',
+                  marginBottom: '16px',
+                  letterSpacing: '2px',
+                  color: 'var(--accent-primary)',
+                }}
+              >
+                {qrToken}
+              </div>
+
+              {/* Live Scan Counter */}
+              <div
+                style={{
+                  background: 'rgba(16, 185, 129, 0.12)',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  borderRadius: '12px',
+                  padding: '12px 16px',
+                  marginBottom: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div>
+                  <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: '600' }}>
+                    Live Biometric Verified Check-ins
+                  </span>
+                  <div style={{ fontSize: '22px', fontWeight: '800', color: 'var(--status-safe)', margin: 0 }}>
+                    ⚡ {liveScanCount} Verified Students
                   </div>
-                ))}
-              </div>
-            )}
-
-            {/* COUNTDOWN TIMER BAR (0 - 10s) */}
-            <div style={{ marginBottom: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)' }}>
-                <span>Token Hash Lifetime</span>
-                <span style={{ fontWeight: '700', color: qrCountdown <= 3 ? 'var(--status-critical)' : 'var(--text-main)' }}>
-                  Refreshes in {qrCountdown}s
+                </div>
+                <span className="status-badge safe" style={{ fontSize: '11px' }}>
+                  ● Live Sync
                 </span>
               </div>
-              <div className="progress-container" style={{ height: '8px', background: 'rgba(255, 255, 255, 0.1)' }}>
-                <div
-                  className="progress-bar"
-                  style={{
-                    width: `${(qrCountdown / 10) * 100}%`,
-                    backgroundColor:
-                      qrCountdown <= 3 ? 'var(--status-critical)' : qrCountdown <= 5 ? 'var(--status-warning)' : 'var(--accent-primary)',
-                    transition: 'width 1s linear',
-                  }}
-                />
-              </div>
-            </div>
 
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
-              GPS coordinate lock: {campusConfig.lat ? campusConfig.lat.toFixed(4) : (campusConfig.latitude ? campusConfig.latitude.toFixed(4) : '28.4595')}, {campusConfig.lng ? campusConfig.lng.toFixed(4) : (campusConfig.longitude ? campusConfig.longitude.toFixed(4) : '77.0266')} ({campusConfig.radiusMeters || 200}m radius)
-            </p>
+              {/* 30-Second Countdown Timer Bar */}
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', marginBottom: '6px', color: 'var(--text-muted)' }}>
+                  <span>Token Auto-Rotate Timer</span>
+                  <span style={{ fontWeight: '700', color: qrCountdown <= 5 ? 'var(--status-critical)' : 'var(--text-main)' }}>
+                    Refreshes in {qrCountdown}s
+                  </span>
+                </div>
+                <div className="progress-container" style={{ height: '8px', background: 'rgba(255, 255, 255, 0.1)' }}>
+                  <motion.div
+                    className="progress-bar"
+                    animate={{ width: `${(qrCountdown / 30) * 100}%` }}
+                    transition={{ duration: 1, ease: 'linear' }}
+                    style={{
+                      backgroundColor:
+                        qrCountdown <= 5 ? 'var(--status-critical)' : qrCountdown <= 10 ? 'var(--status-warning)' : 'var(--accent-primary)',
+                    }}
+                  />
+                </div>
+              </div>
+
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                GPS lock: {campusConfig.latitude ? campusConfig.latitude.toFixed(4) : '28.4595'}, {campusConfig.longitude ? campusConfig.longitude.toFixed(4) : '77.0266'} ({campusConfig.radiusMeters || 200}m radius)
+              </p>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
     </div>
   );
 };

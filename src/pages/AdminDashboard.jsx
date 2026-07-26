@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useMockData } from '../MockDataContext';
 import {
   Shield, Users, Award, AlertTriangle, Settings, Save, Check, Ban,
@@ -874,15 +875,21 @@ const AdminDashboard = () => {
 
       <div className="dashboard-grid">
         {[
-          { icon: <Users size={24} />, value: totalStudents, label: 'Total Students', bg: 'rgba(59,130,246,0.1)', color: 'var(--accent-primary)' },
-          { icon: <Award size={24} />, value: `${avgAttendance}%`, label: 'Average Attendance', bg: 'rgba(16,185,129,0.1)', color: 'var(--status-safe)' },
-          { icon: <AlertTriangle size={24} />, value: criticalStudents, label: 'Below Threshold', bg: criticalStudents > 0 ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)', color: criticalStudents > 0 ? 'var(--status-critical)' : 'var(--status-safe)' },
-          { icon: <Settings size={24} />, value: `${pendingRequests}/${totalRequests}`, label: 'Pending OD Requests', bg: pendingRequests > 0 ? 'rgba(245,158,11,0.1)' : 'rgba(255,255,255,0.05)', color: pendingRequests > 0 ? 'var(--status-warning)' : 'var(--text-muted)' },
+          { icon: <Users size={24} />, value: totalStudents, label: 'Total Enrolled Students', bg: 'rgba(59,130,246,0.1)', color: 'var(--accent-primary)' },
+          { icon: <Shield size={24} />, value: Object.keys(dbState.faculty || {}).length || 18, label: 'Active Faculty Members', bg: 'rgba(139,92,246,0.1)', color: 'var(--accent-secondary)' },
+          { icon: <Award size={24} />, value: `${avgAttendance}%`, label: 'Average Attendance Rate', bg: 'rgba(16,185,129,0.1)', color: 'var(--status-safe)' },
+          { icon: <Bell size={24} />, value: '38 Days Left', label: 'End-Sem Exam Countdown', bg: 'rgba(245,158,11,0.1)', color: 'var(--status-warning)' },
         ].map(m => (
-          <div key={m.label} className="glass-panel col-span-3" style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <motion.div
+            key={m.label}
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98 }}
+            className="glass-panel col-span-3"
+            style={{ display: 'flex', alignItems: 'center', gap: '16px' }}
+          >
             <div style={{ padding: '12px', background: m.bg, color: m.color, borderRadius: '10px' }}>{m.icon}</div>
-            <div><h2 style={{ fontSize: '24px' }}>{m.value}</h2><p style={{ fontSize: '12px' }}>{m.label}</p></div>
-          </div>
+            <div><h2 style={{ fontSize: '22px' }}>{m.value}</h2><p style={{ fontSize: '12px' }}>{m.label}</p></div>
+          </motion.div>
         ))}
 
         <div className="glass-panel col-span-12">

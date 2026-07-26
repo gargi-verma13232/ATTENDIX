@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useMockData } from '../MockDataContext';
 import {
   FileText, Upload, Send, Calculator, AlertCircle, ArrowRight,
