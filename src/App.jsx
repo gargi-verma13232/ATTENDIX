@@ -83,6 +83,7 @@ function AppContent() {
         }
       >
         <Route index element={<AdminDashboard />} />
+        <Route path="data" element={<AdminDashboard />} />
       </Route>
 
       {/* Catch-all redirect */}
