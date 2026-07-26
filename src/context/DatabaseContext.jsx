@@ -323,12 +323,32 @@ export const DatabaseProvider = ({ children }) => {
 
   // ── Student / Faculty Management ──────────────
   const addStudent = (newStudent) => {
+    const fullStudent = {
+      overallAttendance: 80,
+      streak: 5,
+      totalClasses: 100,
+      classesAttended: 80,
+      requiredAttendance: 75,
+      branch: 'B.Tech CSE',
+      year: '1st Year',
+      examScore: 78,
+      nextBadge: 'Getting Started',
+      badges: ['New Student'],
+      timetable: { 1: [], 2: [], 3: [], 4: [], 5: [] },
+      subjects: [
+        { id: 'CS101', name: 'Data Structures', attendance: 80, classesHeld: 25, classesAttended: 20 },
+        { id: 'CS102', name: 'Database Systems', attendance: 80, classesHeld: 25, classesAttended: 20 },
+      ],
+      courses: {},
+      attendanceTrend: [],
+      ...newStudent,
+    };
     setDbState(prev => ({
       ...prev,
-      students: { ...prev.students, [newStudent.id]: newStudent },
+      students: { ...prev.students, [fullStudent.id]: fullStudent },
       users: {
         ...prev.users,
-        [newStudent.id]: { id: newStudent.id, password: 'p@ssword', name: newStudent.name, role: 'student' },
+        [fullStudent.id]: { id: fullStudent.id, password: 'p@ssword', name: fullStudent.name, role: 'student' },
       },
     }));
   };

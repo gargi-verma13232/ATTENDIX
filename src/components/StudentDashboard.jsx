@@ -51,11 +51,28 @@ const StudentDashboard = () => {
     studentDocuments,
   } = useMockData();
 
+  // Safe fallback for student data
+  const activeStudent = student || {
+    name: 'Alex Johnson',
+    totalClasses: 110,
+    classesAttended: 79,
+    requiredAttendance: 75,
+    overallAttendance: 72,
+    streak: 12,
+  };
+
+  const studentName = activeStudent.name || 'Student';
+  const totalClasses = activeStudent.totalClasses || 100;
+  const classesAttended = activeStudent.classesAttended || 75;
+  const requiredAttendance = activeStudent.requiredAttendance || 75;
+  const overallAttendance = activeStudent.overallAttendance ?? 75;
+  const streak = activeStudent.streak ?? 0;
+
   // Exam Eligibility calculation
-  const remainingClasses = student.totalClasses - student.classesAttended - 20;
-  const requiredTotalAttended = Math.ceil((student.totalClasses * student.requiredAttendance) / 100);
-  const classesNeeded = requiredTotalAttended - student.classesAttended;
-  const isEligibleNow = student.overallAttendance >= student.requiredAttendance;
+  const remainingClasses = Math.max(0, totalClasses - classesAttended - 20);
+  const requiredTotalAttended = Math.ceil((totalClasses * requiredAttendance) / 100);
+  const classesNeeded = requiredTotalAttended - classesAttended;
+  const isEligibleNow = overallAttendance >= requiredAttendance;
   const isPossibleToReach = classesNeeded <= remainingClasses;
 
   // Scanner modal state
@@ -238,7 +255,7 @@ const StudentDashboard = () => {
     <div className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="page-header" style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
         <div>
-          <h1 className="page-title">Welcome back, {student.name.split(' ')[0]}</h1>
+          <h1 className="page-title">Welcome back, {studentName.split(' ')[0]}</h1>
           <p className="page-subtitle">Here is your attendance snapshot, WebAuthn QR scanner, and class recovery hub.</p>
         </div>
 
@@ -294,15 +311,15 @@ const StudentDashboard = () => {
       <div className="dashboard-grid">
         {/* Main Attendance Overview */}
         <div className="glass-panel col-span-8" style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-          <div className="circular-progress" style={{ '--progress': `${student.overallAttendance}%` }}>
-            <div className="circular-progress-value">{student.overallAttendance}%</div>
+          <div className="circular-progress" style={{ '--progress': `${overallAttendance}%` }}>
+            <div className="circular-progress-value">{overallAttendance}%</div>
           </div>
           <div>
             <h2>Overall Attendance Ratio</h2>
-            <p style={{ marginBottom: '16px' }}>{student.classesAttended} out of {student.totalClasses} total classes attended</p>
-            <div className={`status-badge ${student.overallAttendance >= 75 ? 'safe' : student.overallAttendance >= 65 ? 'warning' : 'critical'}`}>
-              {student.overallAttendance >= 75 ? <CheckCircle size={16} /> : <AlertTriangle size={16} />}
-              {student.overallAttendance >= 75 ? 'Safe Exam Zone' : student.overallAttendance >= 65 ? 'Warning Zone' : 'Critical Shortage'}
+            <p style={{ marginBottom: '16px' }}>{classesAttended} out of {totalClasses} total classes attended</p>
+            <div className={`status-badge ${overallAttendance >= 75 ? 'safe' : overallAttendance >= 65 ? 'warning' : 'critical'}`}>
+              {overallAttendance >= 75 ? <CheckCircle size={16} /> : <AlertTriangle size={16} />}
+              {overallAttendance >= 75 ? 'Safe Exam Zone' : overallAttendance >= 65 ? 'Warning Zone' : 'Critical Shortage'}
             </div>
           </div>
         </div>
@@ -312,7 +329,7 @@ const StudentDashboard = () => {
           <div className="streak-icon-container">
             <Flame size={32} />
           </div>
-          <h2 style={{ fontSize: '32px', marginBottom: '4px' }}>{student.streak} Days</h2>
+          <h2 style={{ fontSize: '32px', marginBottom: '4px' }}>{streak} Days</h2>
           <p style={{ fontWeight: '500', color: 'var(--text-main)', marginBottom: '8px' }}>Attendance Streak</p>
           <div className="status-badge warning" style={{ fontSize: '12px', background: 'rgba(245, 158, 11, 0.2)' }}>
             <Award size={14} /> Top 5% in Class

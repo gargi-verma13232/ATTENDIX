@@ -50,6 +50,16 @@ const FacultyDashboard = () => {
     stopSessionQR
   } = useMockData();
 
+  // Safe fallback for faculty profile
+  const prof = facultyProfile || {
+    name: 'Prof. Rajesh Mehta',
+    title: 'Principal Professor & Course Coordinator',
+    department: 'Computer Science & Engineering',
+    cabinOfficeLocation: 'Room A-402, Tech Block (4th Floor)',
+    email: 'r.mehta@attendix.edu',
+    badge: 'Senior Faculty',
+  };
+
   // QR Generator state & Section picker
   const [showQrModal, setShowQrModal] = useState(false);
   const [selectedSection, setSelectedSection] = useState('Section A');
@@ -170,14 +180,14 @@ const FacultyDashboard = () => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
             <h1 className="page-title" style={{ margin: 0 }}>Faculty Workspace</h1>
             <span className="status-badge safe" style={{ fontSize: '12px' }}>
-              {facultyProfile.badge}
+              {prof.badge}
             </span>
           </div>
           <p className="page-subtitle">
-            {facultyProfile.name} • {facultyProfile.title} ({facultyProfile.department})
+            {prof.name} • {prof.title} ({prof.department})
           </p>
           <p style={{ fontSize: '13px', color: 'var(--accent-primary)', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <MapPin size={14} /> Cabin Office: {facultyProfile.cabinOfficeLocation}
+            <MapPin size={14} /> Cabin Office: {prof.cabinOfficeLocation}
           </p>
         </div>
 
