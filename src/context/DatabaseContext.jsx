@@ -235,13 +235,22 @@ const INITIAL_USERS = {
   'ADM-2024-001': { id: 'ADM-2024-001', password: 'p@ssword', name: 'Registrar Office', role: 'admin', office: 'Admin Block A' },
 };
 
+const INITIAL_CAMPUS_CONFIG = {
+  lat: 28.4595,
+  lng: 77.0266,
+  radiusMeters: 200,
+  enforceGeofence: true,
+};
+
 const DB_KEY = 'attendix_db_state_react';
 
 const initialDbState = {
   students: INITIAL_STUDENTS,
   faculty: INITIAL_FACULTY,
+  rectifications: INITIAL_RECTIFICATIONS,
   rectificationRequests: INITIAL_RECTIFICATIONS,
   sessionLogs: INITIAL_SESSION_LOGS,
+  campusConfig: INITIAL_CAMPUS_CONFIG,
   users: INITIAL_USERS,
 };
 
@@ -562,6 +571,13 @@ export const DatabaseProvider = ({ children }) => {
 
   const resetDB = () => setDbState(initialDbState);
 
+  const updateCampusConfig = (newConfig) => {
+    setDbState(prev => ({
+      ...prev,
+      campusConfig: { ...(prev.campusConfig || INITIAL_CAMPUS_CONFIG), ...newConfig },
+    }));
+  };
+
   // ── Derived state helpers ─────────────────────
   const activeStudentProfile =
     currentUser && currentUser.role === 'student' ? dbState.students[currentUser.id] : null;
@@ -575,8 +591,10 @@ export const DatabaseProvider = ({ children }) => {
         subjects: activeStudentProfile ? activeStudentProfile.subjects : [],
         attendanceTrend: activeStudentProfile ? activeStudentProfile.attendanceTrend : [],
         students: dbState.students,
-        rectificationRequests: dbState.rectificationRequests,
+        rectificationRequests: dbState.rectificationRequests || dbState.rectifications || [],
+        rectifications: dbState.rectificationRequests || dbState.rectifications || [],
         sessionLogs: dbState.sessionLogs,
+        campusConfig: dbState.campusConfig || INITIAL_CAMPUS_CONFIG,
         activeSection,
         setActiveSection,
         isMobileNavOpen,
@@ -591,8 +609,10 @@ export const DatabaseProvider = ({ children }) => {
         importJSONState,
         resetDB,
         submitRectification,
+        addRectification: submitRectification,
         approveRequest,
         rejectRequest,
+        updateCampusConfig,
       }}
     >
       {children}

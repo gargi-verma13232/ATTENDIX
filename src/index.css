@@ -1242,6 +1242,201 @@ body.light-theme .streak-sidebar-widget {
     grid-template-columns: 1fr;
   }
 
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid var(--panel-border);
+}
+
+body.light-theme .task-detail-block p {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.task-quiz-alert {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--status-warning-bg);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: var(--status-warning);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ── Subject Trajectory Cards ────────────── */
+.subject-trajectory-card {
+  padding: 16px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.subject-trajectory-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+/* ── Faculty Session Logger ──────────────── */
+.faculty-logger {
+  padding: 8px 0;
+}
+
+.field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.roster-table {
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.roster-header {
+  display: grid;
+  grid-template-columns: 1fr 180px 260px;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--panel-border);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.roster-row {
+  display: grid;
+  grid-template-columns: 1fr 180px 260px;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--panel-border);
+  font-size: 14px;
+  transition: background 0.15s;
+}
+
+.roster-row:last-child {
+  border-bottom: none;
+}
+
+.roster-row:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+body.light-theme .roster-header {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* ── Alert Banners ───────────────────────── */
+.alert-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: var(--status-safe-bg);
+  color: var(--status-safe);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.alert-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: var(--status-critical-bg);
+  color: var(--status-critical);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ── HOD Alert System ────────────────────── */
+.hod-alert-row {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.03);
+  transition: transform 0.2s ease;
+}
+
+.hod-alert-row:hover {
+  transform: translateX(3px);
+}
+
+.hod-alert-info h4 {
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.hod-alert-progress .progress-container {
+  position: relative;
+  margin-top: 6px;
+}
+
+/* ── Sidebar Streak Widget ───────────────── */
+.streak-sidebar-widget {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  margin-top: 8px;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* ── Nav Active Bar (Admin buttons) ─────── */
+.nav-active-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--accent-gradient);
+  border-radius: 0 4px 4px 0;
+}
+
+/* ── Light theme overrides for new components */
+body.light-theme .feed-item {
+  background: rgba(0, 0, 0, 0.02);
+}
+body.light-theme .feed-absent {
+  background: rgba(239, 68, 68, 0.03);
+}
+body.light-theme .roster-row:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+body.light-theme .hod-alert-row {
+  background: rgba(239, 68, 68, 0.02);
+}
+body.light-theme .streak-sidebar-widget {
+  background: rgba(245, 158, 11, 0.06);
+}
+
+/* ── Mobile responsive additions ─────────── */
+@media (max-width: 768px) {
+  .roster-header,
+  .roster-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .hod-alert-row {
+    grid-template-columns: 1fr;
+  }
+
   .task-modal {
     max-width: 100%;
     border-radius: 16px;
@@ -1249,5 +1444,73 @@ body.light-theme .streak-sidebar-widget {
 
   .subject-trajectory-card {
     padding: 12px;
+  }
+}
+
+/* ── Top Navbar Role Switcher & Theme Toggle ── */
+.role-switcher-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid var(--panel-border);
+  margin-left: auto;
+}
+
+body.light-theme .role-switcher-container {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.role-switch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.role-switch-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.role-switch-btn.active {
+  background: var(--accent-gradient);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.top-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+}
+
+.top-theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+  .role-switcher-container {
+    display: none;
   }
 }
