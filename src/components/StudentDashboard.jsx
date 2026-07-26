@@ -77,6 +77,48 @@ const StudentDashboard = () => {
   // Catch-Up Modal state
   const [selectedCatchupSession, setSelectedCatchupSession] = useState(null);
 
+  // Manage Camera Stream
+  useEffect(() => {
+    let stream = null;
+    const startCamera = async () => {
+      if (cameraActive) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' }
+          });
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        } catch (err) {
+          console.error("Failed to access camera:", err);
+        }
+      }
+    };
+
+    const stopCamera = () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+      if (videoRef.current) {
+        const currentStream = videoRef.current.srcObject;
+        if (currentStream) {
+          currentStream.getTracks().forEach(track => track.stop());
+        }
+        videoRef.current.srcObject = null;
+      }
+    };
+
+    if (cameraActive) {
+      startCamera();
+    } else {
+      stopCamera();
+    }
+
+    return () => {
+      stopCamera();
+    };
+  }, [cameraActive]);
+
   // Trigger WebAuthn Biometric API with Fallback
   const handleBiometricUnlock = async () => {
     setFingerprintScanning(true);
@@ -528,20 +570,19 @@ const StudentDashboard = () => {
                       position: 'relative',
                     }}
                   >
-                    <div
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
                       style={{
-                        width: '100px',
-                        height: '100px',
-                        border: '2px dashed var(--accent-primary)',
-                        borderRadius: '12px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: '#ffffff',
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        transform: `scale(${zoomLevel})`,
+                        transition: 'transform 0.25s ease',
                       }}
-                    >
-                      <QrCode size={64} color="#000" />
-                    </div>
+                    />
                   </div>
 
                   <div className="scanner-laser" />
